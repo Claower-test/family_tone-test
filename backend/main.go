@@ -12,7 +12,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func checkStaticFiles() {
+	if _, err := os.Stat("./backend/static/index.html"); os.IsNotExist(err) {
+		log.Println("WARNING: ./backend/static/index.html not found!")
+		// Let's check root static just in case
+		if _, err := os.Stat("./static/index.html"); err == nil {
+			log.Println("Found index.html in ./static/ (root)")
+		}
+	} else {
+		log.Println("SUCCESS: Found ./backend/static/index.html")
+	}
+}
+
 func main() {
+	checkStaticFiles()
 	// Initialize Database
 	db.InitDB()
 	defer db.DB.Close()
@@ -40,8 +53,8 @@ func main() {
 		api.GET("/users/:id/profile", middleware.OptionalAuthMiddleware(), handlers.GetUserProfile)
 
 		// Uploads (served as static files)
-		r.Static("/api/uploads/records", "./uploads")
-		r.Static("/api/uploads/avatars", "./uploads/avatars")
+		r.Static("/api/uploads/records", "./backend/uploads")
+		r.Static("/api/uploads/avatars", "./backend/uploads/avatars")
 
 		// Protected routes
 		protected := api.Group("/")
@@ -67,10 +80,11 @@ func main() {
 
 	// ─── Frontend static files ───────────────────────────────────────────────
 	// Serve built Vite assets
-	r.Static("/assets", "./static/assets")
+	r.Static("/assets", "./backend/static/assets")
 
 	// Serve other static files from dist root (favicon, icons, etc.)
-	r.StaticFS("/public", http.Dir("./static"))
+	// This covers /favicon.svg, /icons.svg etc.
+	r.StaticFS("/public_files", http.Dir("./backend/static"))
 
 	// SPA fallback — for any non-API route serve index.html
 	r.NoRoute(func(c *gin.Context) {
@@ -79,7 +93,14 @@ func main() {
 			c.JSON(http.StatusNotFound, gin.H{"error": "api route not found"})
 			return
 		}
-		c.File("./static/index.html")
+
+		// Try to serve the file directly if it exists in static
+		if _, err := os.Stat("./backend/static" + path); err == nil && path != "/" {
+			c.File("./backend/static" + path)
+			return
+		}
+
+		c.File("./backend/static/index.html")
 	})
 
 	// ─── Start server ─────────────────────────────────────────────────────────

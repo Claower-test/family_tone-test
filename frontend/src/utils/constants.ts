@@ -5,7 +5,7 @@
  */
 
 export const API_URL: string =
-  import.meta.env.VITE_API_URL ?? 'http://localhost:8080/api';
+  import.meta.env.VITE_API_URL ?? '/api';
 
 export const USE_MOCK_API: boolean =
   import.meta.env.VITE_USE_MOCK_API === 'true';

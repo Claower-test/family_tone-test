@@ -4,6 +4,7 @@ nixPkgs = ["go", "nodejs", "pnpm", "gcc", "libc-dev"]
 [variables]
 CGO_ENABLED = "1"
 GOOS = "linux"
+NIXPACKS_METADATA = "go"
 
 [phases.install]
 cmds = ["cd frontend && pnpm install"]

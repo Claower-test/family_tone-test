@@ -56,10 +56,10 @@ func main() {
 	
 	// CORS first
 	r.Use(cors.New(cors.Config{
-		AllowAllOrigins:  true,
+		AllowOrigins: []string{"*"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept", "X-Requested-With"},
-		AllowCredentials: true,
+		AllowCredentials: false,
 	}))
 
 	// Logging
@@ -127,3 +127,4 @@ func main() {
 		log.Fatal(err)
 	}
 }
+

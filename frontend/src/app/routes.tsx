@@ -65,6 +65,10 @@ export const router = createBrowserRouter([
         element: <UserProfileView />,
         loader: requireAuth,
       },
+      {
+        path: '*',
+        element: <div className="p-8 text-center mt-20"><h1 className="text-2xl font-black">404</h1><p>Страница не найдена внутри расширения.</p></div>,
+      },
     ],
   },
 ]);

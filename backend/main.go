@@ -86,6 +86,16 @@ func main() {
 			protected.POST("/records/upload", handlers.UploadRecord)
 			protected.GET("/user/profile", handlers.GetUserInfo)
 			protected.PUT("/user/profile", handlers.UpdateProfile)
+protected.PUT("/user/password", handlers.ChangePassword)
+protected.POST("/records/:id/toggle-public", handlers.TogglePublic)
+protected.POST("/record/:id/reaction", handlers.ToggleReaction)
+protected.POST("/records/:id/reaction", handlers.ToggleReaction)
+protected.GET("/records/:id/comments", handlers.GetComments)
+protected.POST("/records/:id/comments", handlers.AddComment)
+protected.PUT("/comments/:id", handlers.UpdateComment)
+protected.DELETE("/comments/:id", handlers.DeleteComment)
+protected.POST("/comment/:id/reaction", handlers.ToggleReaction)
+protected.POST("/users/:id/follow", handlers.ToggleFollow)
 		}
 	}
 
@@ -126,6 +136,7 @@ func main() {
 		log.Fatal(err)
 	}
 }
+
 
 
 

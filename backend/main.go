@@ -9,6 +9,7 @@ import (
 	"github.com/family_tone/internal/db"
 	"github.com/family_tone/internal/handlers"
 	"github.com/family_tone/internal/middleware"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -41,8 +42,20 @@ func main() {
 	// Diagnostic Logger Middleware
 	r.Use(func(c *gin.Context) {
 		log.Printf("[DIAGNOSTIC] %s %s from %s", c.Request.Method, c.Request.URL.Path, c.ClientIP())
+		if c.Request.Method == "OPTIONS" {
+			log.Println("[DIAGNOSTIC] Handling OPTIONS preflight")
+		}
 		c.Next()
 	})
+
+	// CORS — even on same origin, some requests need it for preflight
+	r.Use(cors.New(cors.Config{
+		AllowAllOrigins:  true,
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept", "User-Agent", "Cache-Control", "Keep-Alive"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
 
 	// ─── API Routes ──────────────────────────────────────────────────────────
 	api := r.Group("/api")

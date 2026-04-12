@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"os"
-	"strings"
 
 	"github.com/family_tone/internal/db"
 	"github.com/family_tone/internal/handlers"
@@ -24,21 +23,13 @@ func main() {
 
 	r := gin.Default()
 
-	// Configure CORS — allow all origins in production, specific origins in dev
-	allowedOrigins := os.Getenv("ALLOWED_ORIGINS")
-	var origins []string
-	if allowedOrigins != "" {
-		origins = strings.Split(allowedOrigins, ",")
-	} else {
-		origins = []string{"http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:5176"}
-	}
-
+	// CORS — allow all origins so Railway frontend can reach backend
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     origins,
+		AllowAllOrigins:  true,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
+		AllowCredentials: false,
 	}))
 
 	// API Routes

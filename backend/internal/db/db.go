@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 var DB *sql.DB
@@ -22,7 +22,7 @@ func InitDB() {
 		os.Mkdir("./data", 0755)
 	}
 
-	DB, err = sql.Open("sqlite3", dbPath)
+	DB, err = sql.Open("sqlite", dbPath)
 	if err != nil {
 		log.Fatal("Failed to open database:", err)
 	}
@@ -110,3 +110,5 @@ func createTables() {
 func GenerateUniqueID() string {
 	return fmt.Sprintf("rec_%d_%d", time.Now().UnixNano(), rand.Intn(1000))
 }
+
+

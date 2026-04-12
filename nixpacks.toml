@@ -13,7 +13,7 @@ cmds = [
     "cd frontend && pnpm run build",
     "mkdir -p backend/static backend/uploads/avatars",
     "cp -r frontend/dist/* backend/static/",
-    "cd backend && go build -ldflags='-w -s' -o out ."
+    "cd backend && go build -ldflags='-w -s' -o out main.go"
 ]
 
 [start]

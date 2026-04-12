@@ -55,12 +55,19 @@ func main() {
 		c.Next()
 	})
 
+	// Global Diagnostic Headers
+	r.Use(func(c *gin.Context) {
+		c.Header("X-Engine", "Family-Tone-Go")
+		c.Header("X-Deployment-Time", "2026-04-12")
+		c.Next()
+	})
+
 	// CORS — allow all and handle OPTIONS explicitly
 	r.Use(cors.New(cors.Config{
 		AllowAllOrigins:  true,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept", "X-Requested-With"},
-		ExposeHeaders:    []string{"Content-Length"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept", "X-Requested-With", "X-Engine"},
+		ExposeHeaders:    []string{"Content-Length", "X-Engine"},
 		AllowCredentials: true,
 	}))
 

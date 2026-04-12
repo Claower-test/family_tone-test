@@ -35,7 +35,14 @@ func main() {
 		gin.SetMode(mode)
 	}
 
-	r := gin.Default()
+	r := gin.New()
+	r.Use(gin.Recovery())
+	
+	// Diagnostic Logger Middleware
+	r.Use(func(c *gin.Context) {
+		log.Printf("[DIAGNOSTIC] %s %s from %s", c.Request.Method, c.Request.URL.Path, c.ClientIP())
+		c.Next()
+	})
 
 	// ─── API Routes ──────────────────────────────────────────────────────────
 	api := r.Group("/api")

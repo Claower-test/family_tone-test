@@ -91,7 +91,7 @@ func main() {
 
 	// Serve assets locally if they exist
 	r.Static("/assets", "./backend/static/assets")
-	r.Static("/api/uploads", "./backend/uploads")
+	r.Static("/api/uploads", "./uploads")
 	
 	// Catch-all for SPA
 	r.NoRoute(func(c *gin.Context) {
@@ -126,6 +126,7 @@ func main() {
 		log.Fatal(err)
 	}
 }
+
 
 
 

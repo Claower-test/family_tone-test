@@ -26,3 +26,5 @@ Thumbs.db
 
 # ── Railway / Docker artefacts ───────────────────────────────────────────────
 *.log
+
+!frontend/.env.production

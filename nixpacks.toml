@@ -4,7 +4,6 @@ nixPkgs = ["go", "nodejs", "pnpm", "gcc", "libc-dev"]
 [variables]
 CGO_ENABLED = "1"
 GOOS = "linux"
-NIXPACKS_METADATA = "go"
 
 [phases.install]
 cmds = ["cd frontend && pnpm install"]
@@ -14,6 +13,7 @@ cmds = [
     "cd frontend && pnpm run build",
     "rm -rf backend/static && mkdir -p backend/static backend/uploads/avatars",
     "cp -r frontend/dist/* backend/static/",
+    "ls -R backend/static",
     "cd backend && go build -ldflags='-w -s' -o out main.go"
 ]
 

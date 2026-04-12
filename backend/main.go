@@ -2,6 +2,8 @@ package main
 
 import (
 	"log"
+	"os"
+	"strings"
 
 	"github.com/family_tone/internal/db"
 	"github.com/family_tone/internal/handlers"
@@ -15,11 +17,24 @@ func main() {
 	db.InitDB()
 	defer db.DB.Close()
 
+	// Set GIN mode from environment
+	if mode := os.Getenv("GIN_MODE"); mode != "" {
+		gin.SetMode(mode)
+	}
+
 	r := gin.Default()
 
-	// Configure CORS
+	// Configure CORS — allow all origins in production, specific origins in dev
+	allowedOrigins := os.Getenv("ALLOWED_ORIGINS")
+	var origins []string
+	if allowedOrigins != "" {
+		origins = strings.Split(allowedOrigins, ",")
+	} else {
+		origins = []string{"http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:5176"}
+	}
+
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:5176"},
+		AllowOrigins:     origins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -67,8 +82,13 @@ func main() {
 		}
 	}
 
-	log.Println("Server starting on :8080")
-	if err := r.Run(":8080"); err != nil {
+	// Use PORT from environment (Railway sets this automatically)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	log.Printf("Server starting on :%s", port)
+	if err := r.Run(":" + port); err != nil {
 		log.Fatal("Server failed to start:", err)
 	}
 }

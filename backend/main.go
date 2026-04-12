@@ -14,15 +14,22 @@ import (
 )
 
 func checkStaticFiles() {
-	if _, err := os.Stat("./backend/static/index.html"); os.IsNotExist(err) {
-		log.Println("WARNING: ./backend/static/index.html not found!")
-		// Let's check root static just in case
-		if _, err := os.Stat("./static/index.html"); err == nil {
-			log.Println("Found index.html in ./static/ (root)")
-		}
-	} else {
-		log.Println("SUCCESS: Found ./backend/static/index.html")
+	cwd, _ := os.Getwd()
+	log.Printf("[DIAGNOSTIC] Current Working Directory: %s", cwd)
+	
+	pathsToCheck := []string{
+		"./backend/static/index.html",
+		"./static/index.html",
+		"static/index.html",
 	}
+	
+	for _, p := range pathsToCheck {
+		if _, err := os.Stat(p); err == nil {
+			log.Printf("[DIAGNOSTIC] Found index.html at: %s", p)
+			return
+		}
+	}
+	log.Println("[DIAGNOSTIC] WARNING: index.html NOT FOUND in any common location!")
 }
 
 func main() {
@@ -48,14 +55,19 @@ func main() {
 		c.Next()
 	})
 
-	// CORS — even on same origin, some requests need it for preflight
+	// CORS — allow all and handle OPTIONS explicitly
 	r.Use(cors.New(cors.Config{
 		AllowAllOrigins:  true,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept", "User-Agent", "Cache-Control", "Keep-Alive"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept", "X-Requested-With"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}))
+
+	// Global OPTIONS handler to prevent 405s on preflight
+	r.OPTIONS("/*any", func(c *gin.Context) {
+		c.Status(http.StatusNoContent)
+	})
 
 	// ─── API Routes ──────────────────────────────────────────────────────────
 	api := r.Group("/api")

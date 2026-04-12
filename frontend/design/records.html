@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="ru">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Family Tone — Записи</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+            rel="stylesheet"
+        />
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        fontFamily: { inter: ["Inter", "sans-serif"] },
+                        colors: {
+                            brand: {
+                                50: "#fff7ed",
+                                100: "#ffedd5",
+                                200: "#fed7aa",
+                                300: "#fdba74",
+                                400: "#fb923c",
+                                500: "#f97316",
+                                600: "#ea580c",
+                                700: "#c2410c",
+                                800: "#9a3412",
+                                900: "#7c2d12",
+                            },
+                        },
+                    },
+                },
+            };
+        </script>
+        <style>
+            *,
+            *::before,
+            *::after {
+                font-family: "Inter", sans-serif;
+            }
+            html {
+                scroll-behavior: smooth;
+                background: #ffffff;
+            }
+            body {
+                background: #ffffff;
+                color: #1a1a1a;
+                overflow-x: hidden;
+                margin: 0;
+            }
+            ::-webkit-scrollbar {
+                width: 4px;
+            }
+            ::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            ::-webkit-scrollbar-thumb {
+                background: #e5e5e5;
+                border-radius: 2px;
+            }
+
+            .gradient-text {
+                background: linear-gradient(
+                    135deg,
+                    #f97316 0%,
+                    #ea580c 40%,
+                    #dc2626 70%,
+                    #db2777 100%
+                );
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+
+            .cta-btn {
+                background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+                transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+
+            .nav-glass {
+                background: rgba(255, 255, 255, 0.92);
+                backdrop-filter: saturate(180%) blur(20px);
+                -webkit-backdrop-filter: saturate(180%) blur(20px);
+                border-bottom: 1px solid #f0f0f0;
+            }
+
+            .stat-item {
+                background: #fafafa;
+                border: 1px solid #f0f0f0;
+                border-radius: 16px;
+                transition: all 0.3s ease;
+            }
+            .stat-item:hover {
+                border-color: #e8e8e8;
+                background: #ffffff;
+            }
+
+            .input-field {
+                background: #fafafa;
+                border: 1.5px solid #f0f0f0;
+                border-radius: 14px;
+                padding: 14px 16px;
+                font-size: 14px;
+                color: #1a1a1a;
+                outline: none;
+                width: 100%;
+                transition: all 0.3s ease;
+            }
+            .input-field::placeholder {
+                color: #b0b0b0;
+            }
+            .input-field:focus {
+                border-color: #fdba74;
+                background: #ffffff;
+                box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.08);
+            }
+
+            .tag-pill {
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                padding: 2px 8px;
+                border-radius: 6px;
+                font-size: 10px;
+                font-weight: 600;
+            }
+
+            .audio-item {
+                transition: all 0.3s ease;
+                cursor: pointer;
+                border: 1px solid #f0f0f0;
+                border-radius: 16px;
+                background: #fafafa;
+            }
+            .audio-item:hover {
+                background: #ffffff;
+                border-color: #e8e8e8;
+            }
+            .audio-item.playing {
+                background: #fffbf5;
+                border-color: #fed7aa;
+            }
+
+            .mini-wave {
+                display: flex;
+                align-items: end;
+                gap: 1px;
+                height: 20px;
+            }
+            .mini-bar {
+                width: 2px;
+                border-radius: 1px;
+                transition: height 0.3s ease;
+            }
+
+            .playing-bars {
+                display: none;
+            }
+            .audio-item.playing .playing-bars {
+                display: flex;
+            }
+            .audio-item.playing .play-icon-static {
+                display: none;
+            }
+
+            .p-bar {
+                animation: pBar 0.8s ease-in-out infinite;
+            }
+            @keyframes pBar {
+                0%,
+                100% {
+                    height: 3px;
+                }
+                50% {
+                    height: var(--h);
+                }
+            }
+
+            .year-header {
+                position: sticky;
+                top: 56px;
+                z-index: 10;
+                background: rgba(255, 255, 255, 0.92);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Top Nav -->
+        <nav class="nav-glass fixed top-0 left-0 right-0 z-50">
+            <div
+                class="max-w-2xl mx-auto px-5 h-14 flex items-center justify-between"
+            >
+                <a href="#" class="flex items-center gap-2">
+                    <div
+                        class="w-7 h-7 rounded-lg cta-btn flex items-center justify-center"
+                    >
+                        <span
+                            class="iconify text-white text-xs"
+                            data-icon="solar:microphone-3-bold"
+                        ></span>
+                    </div>
+                    <span
+                        class="font-semibold text-sm tracking-tight text-neutral-900"
+                        >FamilyTone</span
+                    >
+                </a>
+                <div class="flex items-center gap-3">
+                    <span class="tag-pill bg-brand-50 text-brand-600">
+                        <span
+                            class="iconify text-[10px]"
+                            data-icon="solar:crown-bold"
+                        ></span>
+                        PRO
+                    </span>
+                    <div
+                        class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center"
+                    >
+                        <span
+                            class="iconify text-sm text-brand-600"
+                            data-icon="solar:user-bold"
+                        ></span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Records View -->
+        <div class="max-w-2xl mx-auto px-5 pt-20 pb-32">
+            <!-- Header -->
+            <div class="mb-6">
+                <p class="text-xs text-neutral-400 mb-1">Добро пожаловать</p>
+                <h2 class="text-2xl font-black tracking-tight text-neutral-900">
+                    Мои истории
+                </h2>
+            </div>
+
+            <!-- Quick stats -->
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <div class="stat-item p-3 text-center">
+                    <p class="text-lg font-black gradient-text">47</p>
+                    <p
+                        class="text-[9px] text-neutral-400 font-medium uppercase tracking-wider"
+                    >
+                        Записей
+                    </p>
+                </div>
+                <div class="stat-item p-3 text-center">
+                    <p class="text-lg font-black gradient-text">9:24</p>
+                    <p
+                        class="text-[9px] text-neutral-400 font-medium uppercase tracking-wider"
+                    >
+                        Часов
+                    </p>
+                </div>
+            </div>
+
+            <!-- Search -->
+            <div class="relative mb-6">
+                <span
+                    class="iconify absolute left-4 top-1/2 -translate-y-1/2 text-neutral-300"
+                    data-icon="solar:magnifer-linear"
+                ></span>
+                <input
+                    type="text"
+                    class="input-field pl-11"
+                    placeholder="Поиск по историям..."
+                    id="searchInput"
+                    oninput="filterRecords()"
+                />
+            </div>
+
+            <!-- Records list -->
+            <div id="recordsList"></div>
+        </div>
+
+        <script>
+            const records = [
+                {
+                    id: 1,
+                    question:
+                        "Расскажите о самом счастливом дне вашего детства",
+                    date: "2025-01-15",
+                    duration: "4:32",
+                    hasMusic: true,
+                    category: "childhood",
+                },
+                {
+                    id: 2,
+                    question: "Какой совет дали вам бабушка?",
+                    date: "2025-01-12",
+                    duration: "3:18",
+                    hasMusic: false,
+                    category: "family",
+                },
+                {
+                    id: 3,
+                    question: "В чём была ваша первая любовь?",
+                    date: "2025-01-08",
+                    duration: "6:05",
+                    hasMusic: true,
+                    category: "love",
+                },
+                {
+                    id: 4,
+                    question: "О чём вы мечтали в 20 лет?",
+                    date: "2024-12-28",
+                    duration: "5:47",
+                    hasMusic: true,
+                    category: "dreams",
+                },
+                {
+                    id: 5,
+                    question: "Расскажите о вашем лучшем друге из детства",
+                    date: "2024-12-20",
+                    duration: "4:12",
+                    hasMusic: false,
+                    category: "childhood",
+                },
+                {
+                    id: 6,
+                    question: "Каким вы видели своё будущее в школе?",
+                    date: "2024-12-15",
+                    duration: "3:55",
+                    hasMusic: true,
+                    category: "dreams",
+                },
+                {
+                    id: 7,
+                    question: "Самый запоминающийся отпуск",
+                    date: "2024-12-01",
+                    duration: "7:23",
+                    hasMusic: true,
+                    category: "travel",
+                },
+                {
+                    id: 8,
+                    question: "Расскажите о вашей первой работе",
+                    date: "2024-11-22",
+                    duration: "5:30",
+                    hasMusic: false,
+                    category: "career",
+                },
+                {
+                    id: 9,
+                    question: "Как вы познакомились с супругой/супругом?",
+                    date: "2024-11-10",
+                    duration: "8:14",
+                    hasMusic: true,
+                    category: "love",
+                },
+                {
+                    id: 10,
+                    question: "Какой момент заставил вас смеяться до слёз?",
+                    date: "2024-10-28",
+                    duration: "3:42",
+                    hasMusic: false,
+                    category: "fun",
+                },
+                {
+                    id: 11,
+                    question: "Расскажите о человеке, который на вас повлиял",
+                    date: "2024-10-15",
+                    duration: "6:18",
+                    hasMusic: true,
+                    category: "family",
+                },
+                {
+                    id: 12,
+                    question: "Ваше любимое место в родном городе",
+                    date: "2024-10-02",
+                    duration: "4:55",
+                    hasMusic: true,
+                    category: "childhood",
+                },
+            ];
+
+            const categoryStyles = {
+                childhood: {
+                    bg: "bg-orange-50",
+                    text: "text-orange-600",
+                    label: "Детство",
+                },
+                family: {
+                    bg: "bg-green-50",
+                    text: "text-green-600",
+                    label: "Семья",
+                },
+                love: {
+                    bg: "bg-pink-50",
+                    text: "text-pink-600",
+                    label: "Любовь",
+                },
+                dreams: {
+                    bg: "bg-purple-50",
+                    text: "text-purple-600",
+                    label: "Мечты",
+                },
+                travel: {
+                    bg: "bg-blue-50",
+                    text: "text-blue-600",
+                    label: "Путешествия",
+                },
+                career: {
+                    bg: "bg-amber-50",
+                    text: "text-amber-600",
+                    label: "Карьера",
+                },
+                fun: {
+                    bg: "bg-yellow-50",
+                    text: "text-yellow-600",
+                    label: "Юмор",
+                },
+            };
+
+            const months = {
+                "01": "Январь",
+                "02": "Февраль",
+                "03": "Март",
+                "04": "Апрель",
+                "05": "Май",
+                "06": "Июнь",
+                "07": "Июль",
+                "08": "Август",
+                "09": "Сентябрь",
+                10: "Октябрь",
+                11: "Ноябрь",
+                12: "Декабрь",
+            };
+
+            let playingId = null;
+
+            function renderRecords(filter = "") {
+                const container = document.getElementById("recordsList");
+                const filtered = filter
+                    ? records.filter((r) =>
+                          r.question
+                              .toLowerCase()
+                              .includes(filter.toLowerCase()),
+                      )
+                    : records;
+
+                const grouped = {};
+                filtered.forEach((r) => {
+                    const year = r.date.split("-")[0];
+                    if (!grouped[year]) grouped[year] = [];
+                    grouped[year].push(r);
+                });
+
+                let html = "";
+
+                for (const [year, items] of Object.entries(grouped)) {
+                    html += `<div class="year-header py-3 px-1 mb-1"><span class="text-xs font-bold uppercase tracking-[0.15em] text-neutral-400">${year}</span></div>`;
+
+                    let currentMonth = "";
+                    items.forEach((r) => {
+                        const month = months[r.date.split("-")[1]];
+                        if (month !== currentMonth) {
+                            currentMonth = month;
+                            html += `<div class="px-1 mb-2 mt-4 first:mt-0"><span class="text-sm font-semibold text-neutral-700">${month}</span></div>`;
+                        }
+
+                        const day = parseInt(r.date.split("-")[2]);
+                        const isPlaying = playingId === r.id;
+                        const cat =
+                            categoryStyles[r.category] ||
+                            categoryStyles.childhood;
+
+                        let miniWaveHtml = "";
+                        const barHeights = [
+                            8, 14, 6, 18, 12, 16, 8, 10, 14, 6, 12, 18, 10, 8,
+                            14,
+                        ];
+                        barHeights.forEach((h, i) => {
+                            const color =
+                                i % 3 === 1 ? "bg-brand-300" : "bg-neutral-200";
+                            miniWaveHtml += `<div class="mini-bar ${color}" style="height:${h}px"></div>`;
+                        });
+
+                        html += `
+                        <div class="audio-item mb-2 p-4 flex items-center gap-4 ${isPlaying ? "playing" : ""}" onclick="playRecord(${r.id})" data-id="${r.id}">
+                            <div class="w-10 h-10 rounded-xl ${isPlaying ? "bg-brand-100" : "bg-neutral-100"} flex items-center justify-center flex-shrink-0 transition-colors">
+                                <div class="play-icon-static">
+                                    <span class="iconify ${isPlaying ? "text-brand-500" : "text-neutral-400"} play-icon text-lg" data-icon="solar:play-bold"></span>
+                                </div>
+                                <div class="playing-bars items-end gap-[2px] h-4">
+                                    <div class="p-bar w-[2px] bg-brand-500 rounded-full" style="--h:12px;animation-delay:0s"></div>
+                                    <div class="p-bar w-[2px] bg-brand-500 rounded-full" style="--h:16px;animation-delay:.15s"></div>
+                                    <div class="p-bar w-[2px] bg-brand-500 rounded-full" style="--h:10px;animation-delay:.3s"></div>
+                                </div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-neutral-800 truncate">${r.question}</p>
+                                <div class="flex items-center gap-2 mt-1.5">
+                                    <span class="text-[11px] text-neutral-400">${day} ${month}</span>
+                                    <span class="text-[11px] text-neutral-300">·</span>
+                                    <span class="text-[11px] text-neutral-400">${r.duration}</span>
+                                    ${r.hasMusic ? '<span class="iconify text-[10px] text-brand-300" data-icon="solar:music-notes-bold"></span>' : ""}
+                                </div>
+                            </div>
+                            <span class="iconify text-neutral-300 text-lg flex-shrink-0 hover:text-neutral-500 transition-colors" data-icon="solar:menu-dots-bold"></span>
+                        </div>`;
+                    });
+                }
+
+                if (filtered.length === 0) {
+                    html = `
+                    <div class="text-center py-16">
+                        <div class="w-16 h-16 rounded-2xl bg-neutral-100 flex items-center justify-center mx-auto mb-4">
+                            <span class="iconify text-3xl text-neutral-300" data-icon="solar:microphone-3-bold"></span>
+                        </div>
+                        <p class="text-sm font-medium text-neutral-500 mb-1">Ничего не найдено</p>
+                        <p class="text-xs text-neutral-400">Попробуйте другой запрос</p>
+                    </div>`;
+                }
+
+                container.innerHTML = html;
+            }
+
+            function filterRecords() {
+                renderRecords(document.getElementById("searchInput").value);
+            }
+
+            function playRecord(id) {
+                if (playingId === id) {
+                    playingId = null;
+                } else {
+                    playingId = id;
+                    setTimeout(() => {
+                        playingId = null;
+                        renderRecords(
+                            document.getElementById("searchInput").value,
+                        );
+                    }, 4000);
+                }
+                renderRecords(document.getElementById("searchInput").value);
+            }
+
+            document.addEventListener("DOMContentLoaded", () => {
+                renderRecords();
+            });
+        </script>
+    </body>
+</html>

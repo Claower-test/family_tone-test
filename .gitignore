@@ -1,0 +1,28 @@
+# ── Go backend ──────────────────────────────────────────────────────────────
+backend/bin/
+backend/*.exe
+backend/family_tone
+backend/tmp/
+
+# Go test cache
+*.test
+*.out
+
+# ── Node / React frontend ────────────────────────────────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.cache/
+
+# ── Environment files (DO NOT commit secrets) ────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── OS / editor junk ────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/settings.json
+
+# ── Railway / Docker artefacts ───────────────────────────────────────────────
+*.log

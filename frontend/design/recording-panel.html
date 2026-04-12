@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="ru">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Family Tone — Запись</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        fontFamily: { inter: ["Inter", "sans-serif"] },
+                        colors: {
+                            brand: {
+                                50: "#fff7ed", 100: "#ffedd5", 200: "#fed7aa",
+                                300: "#fdba74", 400: "#fb923c", 500: "#f97316",
+                                600: "#ea580c", 700: "#c2410c", 800: "#9a3412",
+                                900: "#7c2d12",
+                            },
+                        },
+                    },
+                },
+            };
+        </script>
+        <style>
+            *, *::before, *::after { font-family: "Inter", sans-serif; }
+            html { scroll-behavior: smooth; background: #ffffff; }
+            body { background: #ffffff; color: #1a1a1a; overflow-x: hidden; margin: 0; }
+
+            .cta-btn {
+                background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+                transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+
+            .nav-glass {
+                background: rgba(255, 255, 255, 0.92);
+                backdrop-filter: saturate(180%) blur(20px);
+                -webkit-backdrop-filter: saturate(180%) blur(20px);
+                border-bottom: 1px solid #f0f0f0;
+            }
+
+            .bottom-bar {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 50;
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: saturate(180%) blur(20px);
+                -webkit-backdrop-filter: saturate(180%) blur(20px);
+                border-top: 1px solid #f0f0f0;
+                padding-bottom: env(safe-area-inset-bottom, 0px);
+            }
+
+            .tab-btn {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 2px;
+                padding: 8px 0;
+                transition: all 0.3s ease;
+                position: relative;
+                flex: 1;
+                color: #a3a3a3;
+            }
+            .tab-btn.active { color: #f97316; }
+            .tab-btn.active::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 24px;
+                height: 2px;
+                background: #f97316;
+                border-radius: 0 0 2px 2px;
+            }
+
+            .record-btn-float {
+                width: 56px;
+                height: 56px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 8px 32px rgba(249, 115, 22, 0.35);
+                transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+                cursor: pointer;
+                position: relative;
+                margin-top: -20px;
+            }
+            .record-btn-float:hover {
+                transform: scale(1.08);
+                box-shadow: 0 12px 40px rgba(249, 115, 22, 0.4);
+            }
+            .record-btn-float:active { transform: scale(0.95); }
+            .record-btn-float.recording { animation: recordPulse 1.5s ease-in-out infinite; }
+
+            @keyframes recordPulse {
+                0%, 100% { box-shadow: 0 8px 40px rgba(249, 115, 22, 0.5); }
+                50% { box-shadow: 0 12px 60px rgba(249, 115, 22, 0.6); }
+            }
+
+            .wave-bar { animation: waveAnim 1.2s ease-in-out infinite; }
+            @keyframes waveAnim {
+                0%, 100% { height: 4px; }
+                50% { height: var(--h); }
+            }
+
+            .record-panel {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: #ffffff;
+                border-top: 1px solid #f0f0f0;
+                border-radius: 28px 28px 0 0;
+                box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.08);
+                transform: translateY(100%);
+                transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+                z-index: 60;
+                padding-bottom: env(safe-area-inset-bottom, 20px);
+            }
+            .record-panel.open { transform: translateY(0); }
+
+            .record-backdrop {
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.2);
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.4s ease;
+                z-index: 55;
+            }
+            .record-backdrop.open { opacity: 1; pointer-events: auto; }
+        </style>
+    </head>
+    <body>
+        <!-- Top Nav -->
+        <nav class="nav-glass fixed top-0 left-0 right-0 z-50">
+            <div class="max-w-2xl mx-auto px-5 h-14 flex items-center justify-between">
+                <a href="#" class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-lg cta-btn flex items-center justify-center">
+                        <span class="iconify text-white text-xs" data-icon="solar:microphone-3-bold"></span>
+                    </div>
+                    <span class="font-semibold text-sm tracking-tight text-neutral-900">FamilyTone</span>
+                </a>
+                <div class="flex items-center gap-3">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-brand-50 text-brand-600">
+                        <span class="iconify text-[8px]" data-icon="solar:crown-bold"></span>
+                        PRO
+                    </span>
+                    <div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center">
+                        <span class="iconify text-sm text-brand-600" data-icon="solar:user-bold"></span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Placeholder content -->
+        <div class="max-w-2xl mx-auto px-5 pt-20 pb-32">
+            <div class="text-center py-16">
+                <p class="text-sm text-neutral-400 mb-2">Нажмите кнопку записи для демонстрации</p>
+            </div>
+        </div>
+
+        <!-- Bottom Tab Bar -->
+        <div class="bottom-bar" id="bottomBar">
+            <div class="max-w-2xl mx-auto flex items-end justify-around px-4 pt-1 pb-2">
+                <button class="tab-btn" id="tabRecords">
+                    <span class="iconify text-xl" data-icon="solar:headphones-round-bold"></span>
+                    <span class="text-[9px] font-semibold tracking-wide">Записи</span>
+                </button>
+                <button class="tab-btn record-tab" onclick="toggleRecording()" id="tabRecord">
+                    <div class="record-btn-float" id="recordBtnFloat">
+                        <span class="iconify text-white text-xl relative z-10" id="recordBtnIcon" data-icon="solar:microphone-3-bold"></span>
+                    </div>
+                    <span class="text-[9px] font-semibold tracking-wide text-brand-500 mt-1">Запись</span>
+                </button>
+                <button class="tab-btn" id="tabProfile">
+                    <span class="iconify text-xl" data-icon="solar:user-bold"></span>
+                    <span class="text-[9px] font-semibold tracking-wide">Профиль</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Recording Panel -->
+        <div id="recordBackdrop" class="record-backdrop" onclick="toggleRecording()"></div>
+        <div id="recordPanel" class="record-panel">
+            <div class="max-w-2xl mx-auto px-6 py-8">
+                <!-- Handle -->
+                <div class="w-10 h-1 bg-neutral-200 rounded-full mx-auto mb-8"></div>
+
+                <!-- Question -->
+                <div class="text-center mb-8">
+                    <p class="text-lg font-bold text-neutral-900 leading-snug" id="recQuestionText">Запись</p>
+                </div>
+
+                <!-- Waveform -->
+                <div class="flex items-end justify-center gap-[3px] h-16 mb-4" id="recWaveform">
+                    <div class="wave-bar w-[3px] bg-brand-400/60 rounded-full" style="--h: 28px; animation-delay: 0s"></div>
+                    <div class="wave-bar w-[3px] bg-brand-400/70 rounded-full" style="--h: 40px; animation-delay: 0.07s"></div>
+                    <div class="wave-bar w-[3px] bg-brand-400/80 rounded-full" style="--h: 20px; animation-delay: 0.14s"></div>
+                    <div class="wave-bar w-[3px] bg-brand-400/90 rounded-full" style="--h: 48px; animation-delay: 0.1s"></div>
+                    <div class="wave-bar w-[3px] bg-red-400/80 rounded-full" style="--h: 36px; animation-delay: 0.21s"></div>
+                    <div class="wave-bar w-[3px] bg-brand-400 rounded-full" style="--h: 44px; animation-delay: 0.04s"></div>
+                    <div class="wave-bar w-[3px] bg-red-400/70 rounded-full" style="--h: 24px; animation-delay: 0.18s"></div>
+                    <div class="wave-bar w-[3px] bg-brand-400/80 rounded-full" style="--h: 38px; animation-delay: 0.25s"></div>
+                    <div class="wave-bar w-[3px] bg-brand-400/60 rounded-full" style="--h: 32px; animation-delay: 0.09s"></div>
+                    <div class="wave-bar w-[3px] bg-brand-400/70 rounded-full" style="--h: 16px; animation-delay: 0.28s"></div>
+                    <div class="wave-bar w-[3px] bg-red-400/60 rounded-full" style="--h: 42px; animation-delay: 0.16s"></div>
+                    <div class="wave-bar w-[3px] bg-brand-400/80 rounded-full" style="--h: 26px; animation-delay: 0.05s"></div>
+                    <div class="wave-bar w-[3px] bg-brand-400/90 rounded-full" style="--h: 46px; animation-delay: 0.2s"></div>
+                    <div class="wave-bar w-[3px] bg-brand-400/50 rounded-full" style="--h: 18px; animation-delay: 0.3s"></div>
+                    <div class="wave-bar w-[3px] bg-red-400/70 rounded-full" style="--h: 34px; animation-delay: 0.12s"></div>
+                    <div class="wave-bar w-[3px] bg-brand-400/60 rounded-full" style="--h: 22px; animation-delay: 0.23s"></div>
+                    <div class="wave-bar w-[3px] bg-brand-400/80 rounded-full" style="--h: 40px; animation-delay: 0.02s"></div>
+                    <div class="wave-bar w-[3px] bg-red-400/50 rounded-full" style="--h: 30px; animation-delay: 0.27s"></div>
+                    <div class="wave-bar w-[3px] bg-brand-400/70 rounded-full" style="--h: 36px; animation-delay: 0.08s"></div>
+                    <div class="wave-bar w-[3px] bg-brand-400/90 rounded-full" style="--h: 44px; animation-delay: 0.15s"></div>
+                    <div class="wave-bar w-[3px] bg-brand-400/60 rounded-full" style="--h: 20px; animation-delay: 0.32s"></div>
+                </div>
+
+                <!-- Timer -->
+                <p class="text-center text-sm text-neutral-400 font-medium mb-8 tabular-nums" id="recTimer">00:00</p>
+
+                <!-- Controls -->
+                <div class="flex items-center justify-center gap-8">
+                    <button class="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-400 hover:text-neutral-600 hover:bg-neutral-200 transition-all" onclick="resetRecording()">
+                        <span class="iconify text-xl" data-icon="solar:restart-bold"></span>
+                    </button>
+                    <button class="w-16 h-16 rounded-full cta-btn flex items-center justify-center relative" id="panelRecBtn" onclick="toggleRecording()" style="box-shadow: 0 8px 32px rgba(249, 115, 22, 0.35)">
+                        <div class="absolute inset-0 rounded-full cta-btn" style="animation: recordPulse 1.5s ease-in-out infinite;"></div>
+                        <span class="iconify text-white text-2xl relative z-10" id="panelRecIcon" data-icon="solar:pause-bold"></span>
+                    </button>
+                    <button class="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-400 hover:text-green-500 hover:bg-green-50 transition-all" onclick="saveRecording()">
+                        <span class="iconify text-xl" data-icon="solar:check-circle-bold"></span>
+                    </button>
+                </div>
+
+                <!-- Tip -->
+                <p class="text-center text-[11px] text-neutral-400 mt-6">Нажмите ✓ чтобы сохранить или ✕ чтобы отменить</p>
+            </div>
+        </div>
+
+        <script>
+            let isRecording = false;
+            let recInterval = null;
+            let recSeconds = 0;
+
+            function toggleRecording() {
+                isRecording = !isRecording;
+                const icon = document.getElementById("recordBtnIcon");
+                const panel = document.getElementById("recordPanel");
+                const backdrop = document.getElementById("recordBackdrop");
+                const panelIcon = document.getElementById("panelRecIcon");
+                const panelBtn = document.getElementById("panelRecBtn");
+                const waveform = document.getElementById("recWaveform");
+                const recordFloat = document.getElementById("recordBtnFloat");
+
+                if (isRecording) {
+                    recordFloat.classList.add("recording");
+                    icon.setAttribute("data-icon", "solar:stop-bold");
+                    panel.classList.add("open");
+                    backdrop.classList.add("open");
+                    panelIcon.setAttribute("data-icon", "solar:pause-bold");
+                    panelBtn.style.animation = "recordPulse 1.5s ease-in-out infinite";
+                    waveform.style.opacity = "1";
+                    recSeconds = 0;
+                    updateTimer();
+                    recInterval = setInterval(() => {
+                        recSeconds++;
+                        updateTimer();
+                    }, 1000);
+                } else {
+                    recordFloat.classList.remove("recording");
+                    icon.setAttribute("data-icon", "solar:microphone-3-bold");
+                    panel.classList.remove("open");
+                    backdrop.classList.remove("open");
+                    panelBtn.style.animation = "none";
+                    clearInterval(recInterval);
+                }
+            }
+
+            function updateTimer() {
+                const m = String(Math.floor(recSeconds / 60)).padStart(2, "0");
+                const s = String(recSeconds % 60).padStart(2, "0");
+                document.getElementById("recTimer").textContent = `${m}:${s}`;
+            }
+
+            function resetRecording() {
+                recSeconds = 0;
+                updateTimer();
+            }
+
+            function saveRecording() {
+                const duration = document.getElementById("recTimer").textContent;
+                alert(`История сохранена (${duration})`);
+                toggleRecording();
+            }
+        </script>
+    </body>
+</html>

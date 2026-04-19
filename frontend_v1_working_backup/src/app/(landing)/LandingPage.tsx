@@ -27,6 +27,8 @@ export function LandingPage() {
         <FeaturesSection />
         <UsbSection />
         <AudienceSection />
+        {/* <TestimonialsSection /> */}
+        {/* <PricingSection /> */}
         <FaqSection />
         <CtaSection />
       </main>

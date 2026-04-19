@@ -8,7 +8,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { API_URL } from '@/utils/constants';
 import { cn } from '@/utils/cn';
 
-export function UserProfileView() {
+export default function UserProfileView() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();

@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="ru">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Family Tone — Вход</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        fontFamily: { inter: ["Inter", "sans-serif"] },
+                        colors: {
+                            brand: {
+                                50: "#fff7ed", 100: "#ffedd5", 200: "#fed7aa",
+                                300: "#fdba74", 400: "#fb923c", 500: "#f97316",
+                                600: "#ea580c", 700: "#c2410c", 800: "#9a3412",
+                                900: "#7c2d12",
+                            },
+                        },
+                    },
+                },
+            };
+        </script>
+        <style>
+            *, *::before, *::after { font-family: "Inter", sans-serif; }
+            html { scroll-behavior: smooth; background: #ffffff; }
+            body { background: #ffffff; color: #1a1a1a; overflow-x: hidden; margin: 0; }
+
+            .cta-btn {
+                background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+                transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            .cta-btn:hover { transform: scale(1.03); box-shadow: 0 8px 30px rgba(249, 115, 22, 0.3); }
+            .cta-btn:active { transform: scale(0.98); }
+
+            .sketch-block-white {
+                background: #ffffff;
+                border: 1px solid #f0f0f0;
+                border-radius: 20px;
+                overflow: hidden;
+                transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+
+            .input-field {
+                background: #fafafa;
+                border: 1.5px solid #f0f0f0;
+                border-radius: 14px;
+                padding: 14px 16px;
+                font-size: 14px;
+                color: #1a1a1a;
+                outline: none;
+                width: 100%;
+                transition: all 0.3s ease;
+            }
+            .input-field::placeholder { color: #b0b0b0; }
+            .input-field:focus {
+                border-color: #fdba74;
+                background: #ffffff;
+                box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.08);
+            }
+
+            .field-label {
+                font-size: 11px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.15em;
+                color: #a3a3a3;
+                margin-bottom: 8px;
+            }
+
+            .input-error { border-color: #fca5a5 !important; }
+            .error-text {
+                font-size: 12px;
+                color: #ef4444;
+                margin-top: 6px;
+                display: none;
+            }
+            .error-text.show { display: block; }
+
+            .login-orb {
+                position: absolute;
+                border-radius: 50%;
+                filter: blur(80px);
+                pointer-events: none;
+            }
+
+            .login-card { position: relative; }
+            .login-card::before {
+                content: "";
+                position: absolute;
+                inset: -1px;
+                border-radius: 21px;
+                background: linear-gradient(135deg, rgba(249, 115, 22, 0.1), transparent, rgba(239, 68, 68, 0.05));
+                z-index: -1;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Login Page -->
+        <div class="min-h-screen flex items-center justify-center px-6 relative overflow-hidden" style="background: #fafafa">
+            <!-- Decorative orbs -->
+            <div class="login-orb" style="width: 600px; height: 600px; background: radial-gradient(circle, rgba(249, 115, 22, 0.07), transparent 70%); top: -10%; left: 50%; transform: translateX(-50%);"></div>
+            <div class="login-orb" style="width: 300px; height: 300px; background: radial-gradient(circle, rgba(239, 68, 68, 0.04), transparent 70%); bottom: 10%; right: 10%;"></div>
+            <div class="login-orb" style="width: 200px; height: 200px; background: radial-gradient(circle, rgba(168, 85, 247, 0.04), transparent 70%); top: 30%; left: 5%;"></div>
+
+            <!-- Grid bg -->
+            <div class="absolute inset-0" style="background-image: linear-gradient(rgba(0,0,0,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.015) 1px, transparent 1px); background-size: 60px 60px;"></div>
+
+            <div class="w-full max-w-sm relative z-10">
+                <!-- Logo -->
+                <div class="text-center mb-10">
+                    <a href="#" class="inline-flex items-center gap-2.5 mb-6">
+                        <div class="w-12 h-12 rounded-2xl cta-btn flex items-center justify-center shadow-lg shadow-orange-500/20">
+                            <span class="iconify text-white text-xl" data-icon="solar:microphone-3-bold"></span>
+                        </div>
+                    </a>
+                    <h1 class="text-2xl font-black tracking-tight text-neutral-900 mb-2">Вход в FamilyTone</h1>
+                    <p class="text-sm text-neutral-400 leading-relaxed">Войдите, чтобы слушать и записывать<br />истории вашей семьи</p>
+                </div>
+
+                <!-- Form card -->
+                <div class="login-card sketch-block-white p-8 shadow-sm">
+                    <form id="loginForm" onsubmit="return handleLogin(event);">
+                        <div class="mb-5">
+                            <label class="field-label block">Email</label>
+                            <input id="emailField" type="email" class="input-field" placeholder="you@example.com" autocomplete="email" />
+                            <p id="emailError" class="error-text">Введите корректный email</p>
+                        </div>
+                        <div class="mb-6">
+                            <label class="field-label block">Пароль</label>
+                            <div class="relative">
+                                <input id="passField" type="password" class="input-field pr-12" placeholder="Введите пароль" autocomplete="current-password" />
+                                <button type="button" onclick="togglePassVis()" class="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors">
+                                    <span id="eyeIcon" class="iconify text-lg" data-icon="solar:eye-bold"></span>
+                                </button>
+                            </div>
+                            <p id="passError" class="error-text">Пароль должен быть не менее 6 символов</p>
+                        </div>
+                        <button type="submit" class="cta-btn w-full py-3.5 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 shadow-lg shadow-orange-500/15">
+                            Войти
+                            <span class="iconify" data-icon="solar:arrow-right-linear"></span>
+                        </button>
+                    </form>
+                    <div class="mt-5 text-center">
+                        <a href="#" class="text-xs text-neutral-400 hover:text-neutral-600 transition-colors">Забыли пароль?</a>
+                    </div>
+                </div>
+
+                <p class="text-center text-xs text-neutral-400 mt-6">
+                    Нет аккаунта?
+                    <a href="#" class="text-brand-500 font-semibold hover:text-brand-600 transition-colors">Зарегистрироваться</a>
+                </p>
+
+                <!-- Trust indicators -->
+                <div class="mt-8 flex items-center justify-center gap-4 text-neutral-300">
+                    <div class="flex items-center gap-1.5">
+                        <span class="iconify text-xs" data-icon="solar:shield-check-bold"></span>
+                        <span class="text-[10px]">Шифрование</span>
+                    </div>
+                    <div class="w-px h-3 bg-neutral-200"></div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="iconify text-xs" data-icon="solar:lock-bold"></span>
+                        <span class="text-[10px]">Конфиденциальность</span>
+                    </div>
+                    <div class="w-px h-3 bg-neutral-200"></div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="iconify text-xs" data-icon="solar:heart-bold"></span>
+                        <span class="text-[10px]">12K+ семей</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function handleLogin(e) {
+                e.preventDefault();
+                const email = document.getElementById("emailField").value.trim();
+                const pass = document.getElementById("passField").value;
+                let valid = true;
+
+                const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRe.test(email)) {
+                    document.getElementById("emailField").classList.add("input-error");
+                    document.getElementById("emailError").classList.add("show");
+                    valid = false;
+                } else {
+                    document.getElementById("emailField").classList.remove("input-error");
+                    document.getElementById("emailError").classList.remove("show");
+                }
+
+                if (pass.length < 6) {
+                    document.getElementById("passField").classList.add("input-error");
+                    document.getElementById("passError").classList.add("show");
+                    valid = false;
+                } else {
+                    document.getElementById("passField").classList.remove("input-error");
+                    document.getElementById("passError").classList.remove("show");
+                }
+
+                if (valid) {
+                    alert("Login valid — would navigate to main page");
+                }
+                return false;
+            }
+
+            function togglePassVis() {
+                const f = document.getElementById("passField");
+                const icon = document.getElementById("eyeIcon");
+                if (f.type === "password") {
+                    f.type = "text";
+                    icon.setAttribute("data-icon", "solar:eye-closed-bold");
+                } else {
+                    f.type = "password";
+                    icon.setAttribute("data-icon", "solar:eye-bold");
+                }
+            }
+        </script>
+    </body>
+</html>

@@ -325,11 +325,11 @@ export function RecordingPanel({ isOpen, onClose }: RecordingPanelProps) {
                 <>
                   {/* Waveform */}
                   <div className="flex items-end justify-center gap-[3px] h-16 mb-4">
-                    {WAVE_BARS.map((_bar, i) => (
+                    {WAVE_BARS.map((bar, i) => (
                       <div
                         key={i}
-                        className={cn('wave-bar w-[3px] rounded-full', _bar.color)}
-                        style={{ '--h': `${_bar.h}px`, animationDelay: `${_bar.delay}s` } as React.CSSProperties}
+                        className={cn('wave-bar w-[3px] rounded-full', bar.color)}
+                        style={{ '--h': `${bar.h}px`, animationDelay: `${bar.delay}s` } as React.CSSProperties}
                       />
                     ))}
                   </div>

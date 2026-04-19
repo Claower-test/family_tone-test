@@ -11,8 +11,6 @@ import { RegisterPage } from '@/app/(auth)/RegisterPage';
 import { AppLayout } from '@/app/(app)/AppLayout';
 import { RecordsPage } from '@/app/(app)/RecordsPage';
 import { ProfilePage } from '@/app/(app)/ProfilePage';
-import { PublicPage } from '@/app/(app)/PublicPage';
-import { UserProfileView } from '@/app/(app)/UserProfileView';
 import { useAuthStore } from '@/stores/auth.store';
 
 export function requireAuth() {
@@ -54,14 +52,6 @@ export const router = createBrowserRouter([
         path: '/profile',
         element: <ProfilePage />,
         loader: requireAuth,
-      },
-      {
-        path: '/feed',
-        element: <PublicPage />,
-      },
-      {
-        path: '/users/:id',
-        element: <UserProfileView />,
       },
     ],
   },

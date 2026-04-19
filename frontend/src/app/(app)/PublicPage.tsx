@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Icon } from '@iconify/react';
 import { recordsService } from '@/services/records.service';
+import type { Record } from '@/types/record.types';
 import { API_URL } from '@/utils/constants';
 import { cn } from '@/utils/cn';
 import { CommentSection } from '@/components/ui/CommentSection';
@@ -13,7 +14,7 @@ export function PublicPage() {
   const queryClient = useQueryClient();
   const [openComments, setOpenComments] = useState<number | null>(null);
 
-  const { data: records, isLoading } = useQuery({
+  const { data: records, isLoading } = useQuery<Record[]>({
     queryKey: ['public-records'],
     queryFn: recordsService.getPublicRecords,
   });

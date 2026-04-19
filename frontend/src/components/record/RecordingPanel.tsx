@@ -262,7 +262,7 @@ export function RecordingPanel({ isOpen, onClose }: RecordingPanelProps) {
                 <>
                   {/* Static waveform placeholder */}
                   <div className="flex items-end justify-center gap-[3px] h-16 mb-4">
-                    {WAVE_BARS.map((bar, i) => (
+                    {WAVE_BARS.map((_bar, i) => (
                       <div
                         key={i}
                         className="w-[3px] rounded-full bg-neutral-200"

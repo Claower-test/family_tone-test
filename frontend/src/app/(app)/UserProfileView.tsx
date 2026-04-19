@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { usersService } from '@/services/users.service';
+import { usersService, type PublicProfile } from '@/services/users.service';
 import { recordsService } from '@/services/records.service';
 import { Icon } from '@iconify/react';
 import { motion } from 'framer-motion';
@@ -14,7 +14,7 @@ export default function UserProfileView() {
   const queryClient = useQueryClient();
   const userId = parseInt(id || '0');
 
-  const { data: profile, isLoading } = useQuery({
+  const { data: profile, isLoading } = useQuery<PublicProfile>({
     queryKey: ['user-profile', userId],
     queryFn: () => usersService.getPublicProfile(userId),
     enabled: !!userId,

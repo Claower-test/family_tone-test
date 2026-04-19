@@ -22,7 +22,7 @@ export function CommentSection({ recordId }: CommentSectionProps) {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
 
-  const { data: comments, isLoading } = useQuery({
+  const { data: comments, isLoading } = useQuery<Comment[]>({
     queryKey: ['comments', recordId],
     queryFn: () => recordsService.getComments(recordId),
   });

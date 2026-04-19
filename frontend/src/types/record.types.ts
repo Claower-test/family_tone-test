@@ -11,4 +11,6 @@ export interface Record {
   user_reaction: number;
   is_following: boolean;
   created_at: string;
+  author_name?: string;
+  author_avatar?: string;
 }

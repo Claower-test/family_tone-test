@@ -31,7 +31,12 @@ func ChangePassword(c *gin.Context) {
 		return
 	}
 
-	// 3. Hash new password
+	// 3. Validate and hash new password
+	if err := utils.ValidatePassword(req.NewPassword); err != nil {
+		utils.BadRequest(c, err.Error())
+		return
+	}
+
 	newHashed, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
 	if err != nil {
 		utils.InternalError(c, "Failed to hash new password")

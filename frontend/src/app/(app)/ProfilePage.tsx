@@ -8,6 +8,10 @@ import { useRecords } from "@/hooks/useRecords";
 import { userService } from "@/services/user.service";
 import { RecordStats } from "@/components/record";
 import { API_URL } from "@/utils/constants";
+import { cn } from "@/utils/cn";
+
+const PASSWORD_RE = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]{6,}$/;
+const CYRILLIC_RE = /[а-яА-ЯёЁ]/;
 
 export function ProfilePage() {
   const logout = useAuthStore((s) => s.logout);
@@ -76,8 +80,26 @@ export function ProfilePage() {
   );
 
   async function handleChangePassword() {
-    setIsChangingPassword(true);
     setPasswordError(null);
+
+    if (newPassword.length < 6) {
+      setPasswordError("Пароль должен быть не менее 6 символов");
+      return;
+    }
+    if (CYRILLIC_RE.test(newPassword)) {
+      setPasswordError("Пароль не должен содержать кириллицу");
+      return;
+    }
+    if (!PASSWORD_RE.test(newPassword)) {
+      setPasswordError("Пароль должен содержать латиницу, цифры, заглавную букву и спецсимвол");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError("Пароли не совпадают");
+      return;
+    }
+
+    setIsChangingPassword(true);
     try {
       await userService.changePassword(currentPassword, newPassword);
       setShowPasswordForm(false);
@@ -86,8 +108,8 @@ export function ProfilePage() {
       setConfirmPassword("");
       setShowCurrentPassword(false);
       setShowNewPassword(false);
-    } catch {
-      setPasswordError("Не удалось изменить пароль. Проверьте текущий пароль.");
+    } catch (err) {
+      setPasswordError(err instanceof Error ? err.message : "Не удалось изменить пароль. Проверьте текущий пароль.");
     } finally {
       setIsChangingPassword(false);
     }
@@ -250,6 +272,30 @@ export function ProfilePage() {
                 >
                   <Icon icon={showNewPassword ? "solar:eye-closed-bold" : "solar:eye-bold"} className="text-lg" />
                 </button>
+              </div>
+
+              {/* Requirements checklist */}
+              <div className="mt-3 space-y-1.5 rounded-xl bg-[#fafafa] p-3 border border-[#f0f0f0]">
+                <div className={cn("flex items-center gap-2 text-[10px]", newPassword.length >= 6 ? "text-green-600" : "text-neutral-400")}>
+                  <Icon icon={newPassword.length >= 6 ? "solar:check-read-linear" : "solar:round-transfer-vertical-linear"} />
+                  <span>Минимум 6 символов</span>
+                </div>
+                <div className={cn("flex items-center gap-2 text-[10px]", (/[A-Z]/.test(newPassword) && !CYRILLIC_RE.test(newPassword)) ? "text-green-600" : "text-neutral-400")}>
+                  <Icon icon={(/[A-Z]/.test(newPassword) && !CYRILLIC_RE.test(newPassword)) ? "solar:check-read-linear" : "solar:round-transfer-vertical-linear"} />
+                  <span>Заглавная латинская буква</span>
+                </div>
+                <div className={cn("flex items-center gap-2 text-[10px]", /\d/.test(newPassword) ? "text-green-600" : "text-neutral-400")}>
+                  <Icon icon={/\d/.test(newPassword) ? "solar:check-read-linear" : "solar:round-transfer-vertical-linear"} />
+                  <span>Минимум одна цифра</span>
+                </div>
+                <div className={cn("flex items-center gap-2 text-[10px]", /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPassword) ? "text-green-600" : "text-neutral-400")}>
+                  <Icon icon={/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPassword) ? "solar:check-read-linear" : "solar:round-transfer-vertical-linear"} />
+                  <span>Специальный символ</span>
+                </div>
+                <div className={cn("flex items-center gap-2 text-[10px]", (newPassword.length > 0 && !CYRILLIC_RE.test(newPassword)) ? "text-green-600" : newPassword.length > 0 ? "text-red-500" : "text-neutral-400")}>
+                  <Icon icon={(newPassword.length > 0 && !CYRILLIC_RE.test(newPassword)) ? "solar:check-read-linear" : "solar:round-transfer-vertical-linear"} />
+                  <span>Только латиница</span>
+                </div>
               </div>
             </div>
             <div>

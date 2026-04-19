@@ -12,6 +12,8 @@ import { useAuthStore } from '@/stores/auth.store';
 import { cn } from '@/utils/cn';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PASSWORD_RE = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]{6,}$/;
+const CYRILLIC_RE = /[а-яА-ЯёЁ]/;
 
 interface FormErrors {
   name?: string;
@@ -49,6 +51,10 @@ export function RegisterPage() {
       result.password = 'Введите пароль';
     } else if (password.length < 6) {
       result.password = 'Пароль должен быть не менее 6 символов';
+    } else if (CYRILLIC_RE.test(password)) {
+      result.password = 'Пароль не должен содержать кириллицу';
+    } else if (!PASSWORD_RE.test(password)) {
+      result.password = 'Пароль должен содержать латиницу, цифры, заглавную букву и спецсимвол';
     }
     if (!confirmPassword) {
       result.confirmPassword = 'Подтвердите пароль';
@@ -211,6 +217,33 @@ export function RegisterPage() {
               {errors.password && (
                 <p className="mt-1.5 text-xs text-red-500">{errors.password}</p>
               )}
+              
+              {/* Password Requirements */}
+              <div className="mt-4 space-y-2 rounded-xl bg-neutral-50 p-4 border border-neutral-100">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-2">Требования к паролю:</p>
+                <div className="grid grid-cols-1 gap-1.5">
+                  <div className={cn("flex items-center gap-2 text-[11px]", password.length >= 6 ? "text-green-600" : "text-neutral-400")}>
+                    <Icon icon={password.length >= 6 ? "solar:check-read-linear" : "solar:round-transfer-vertical-linear"} />
+                    <span>Минимум 6 символов</span>
+                  </div>
+                  <div className={cn("flex items-center gap-2 text-[11px]", (/[A-Z]/.test(password) && !CYRILLIC_RE.test(password)) ? "text-green-600" : "text-neutral-400")}>
+                    <Icon icon={(/[A-Z]/.test(password) && !CYRILLIC_RE.test(password)) ? "solar:check-read-linear" : "solar:round-transfer-vertical-linear"} />
+                    <span>Заглавная латинская буква</span>
+                  </div>
+                  <div className={cn("flex items-center gap-2 text-[11px]", /\d/.test(password) ? "text-green-600" : "text-neutral-400")}>
+                    <Icon icon={/\d/.test(password) ? "solar:check-read-linear" : "solar:round-transfer-vertical-linear"} />
+                    <span>Как минимум одна цифра</span>
+                  </div>
+                  <div className={cn("flex items-center gap-2 text-[11px]", /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password) ? "text-green-600" : "text-neutral-400")}>
+                    <Icon icon={/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password) ? "solar:check-read-linear" : "solar:round-transfer-vertical-linear"} />
+                    <span>Специальный символ</span>
+                  </div>
+                  <div className={cn("flex items-center gap-2 text-[11px]", (password.length > 0 && !CYRILLIC_RE.test(password)) ? "text-green-600" : password.length > 0 ? "text-red-500" : "text-neutral-400")}>
+                    <Icon icon={(password.length > 0 && !CYRILLIC_RE.test(password)) ? "solar:check-read-linear" : "solar:round-transfer-vertical-linear"} />
+                    <span>Только латиница</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Confirm Password */}

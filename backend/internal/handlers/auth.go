@@ -17,6 +17,11 @@ func Register(c *gin.Context) {
 		return
 	}
 
+	if err := utils.ValidatePassword(req.Password); err != nil {
+		utils.BadRequest(c, err.Error())
+		return
+	}
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
 		utils.InternalError(c, "Failed to hash password")

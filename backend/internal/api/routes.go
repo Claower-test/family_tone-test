@@ -2,8 +2,6 @@ package api
 
 import (
 	"log"
-	"net/http"
-	"strings"
 
 	"github.com/family_tone/internal/handlers"
 	"github.com/family_tone/internal/middleware"

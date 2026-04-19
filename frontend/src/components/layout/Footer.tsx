@@ -4,26 +4,25 @@
  * @module components/layout/Footer
  */
 
-import { Icon } from '@iconify/react';
+import { Icon } from "@iconify/react";
 
 const PRODUCT_LINKS = [
-  { href: '#how', label: 'Как работает' },
-  { href: '#features', label: 'Возможности' },
-  { href: '#pricing', label: 'Тарифы' },
-  { href: '#', label: 'Скачать' },
+  { href: "#how", label: "Как работает" },
+  { href: "#features", label: "Возможности" },
+  /* { href: '#pricing', label: 'Тарифы' },
+  { href: '#', label: 'Скачать' }, */
 ] as const;
 
 const SUPPORT_LINKS = [
-  { href: '#', label: 'Помощь' },
-  { href: '#', label: 'Блог' },
-  { href: '#', label: 'Контакты' },
-  { href: '#', label: 'Партнёрам' },
+  { href: "#", label: "Помощь" },
+  { href: "#", label: "Контакты" },
+  /* { href: "#", label: "Партнёрам" }, */
 ] as const;
 
 const SOCIAL_LINKS = [
-  { href: '#', icon: 'mdi:telegram', label: 'Telegram' },
-  { href: '#', icon: 'mdi:vk', label: 'VK' },
-  { href: '#', icon: 'mdi:youtube', label: 'YouTube' },
+  { href: "#", icon: "mdi:telegram", label: "Telegram" },
+  { href: "#", icon: "mdi:vk", label: "VK" },
+  { href: "#", icon: "mdi:youtube", label: "YouTube" },
 ] as const;
 
 export function Footer() {
@@ -99,9 +98,7 @@ export function Footer() {
         </div>
 
         <div className="footer-bottom pt-7 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-[10px] text-neutral-300">
-            © 2025 Family Tone
-          </p>
+          <p className="text-[10px] text-neutral-300">© 2025 Family Tone</p>
           <div className="flex items-center gap-5">
             <a
               href="#"

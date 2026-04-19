@@ -4,7 +4,13 @@
  * @module stores/auth.store.test
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+
+vi.mock('@/utils/constants', () => ({
+  API_URL: 'http://localhost:3000/api',
+  USE_MOCK_API: true,
+}));
+
 import { useAuthStore } from '@/stores/auth.store';
 
 describe('useAuthStore', () => {

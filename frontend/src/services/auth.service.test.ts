@@ -4,8 +4,15 @@
  * @module services/auth.service.test
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { authService } from '@/services/auth.service';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+
+vi.mock('@/utils/constants', () => ({
+  API_URL: 'http://localhost:3000/api',
+  USE_MOCK_API: true,
+}));
+
+// Import after mock so authService picks up USE_MOCK_API=true
+const { authService } = await import('@/services/auth.service');
 
 describe('authService (mock)', () => {
   beforeEach(() => {
@@ -17,7 +24,7 @@ describe('authService (mock)', () => {
       const result = await authService.register('Test User', 'test@example.com', 'password123');
 
       expect(result.user).toEqual({
-        id: expect.stringMatching(/^user-\d+$/),
+        id: expect.any(Number),
         email: 'test@example.com',
         name: 'Test User',
       });

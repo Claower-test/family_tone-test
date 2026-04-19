@@ -10,7 +10,7 @@ import { Icon } from '@iconify/react';
 const USB_FEATURES = [
   {
     icon: 'solar:shield-check-bold',
-    iconBg: 'bg-orange-50',
+    iconBg: 'bg-brand-50',
     iconColor: 'text-brand-500',
     title: 'Двойная защита',
     description: 'Зашифрованное облако + физическая копия. Данные переживут любую технологию.',

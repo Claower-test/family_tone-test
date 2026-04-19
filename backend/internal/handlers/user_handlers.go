@@ -34,11 +34,11 @@ func GetUserInfo(c *gin.Context) {
 	
 	if err != nil {
 		log.Printf("Error fetching user info: %v", err)
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		utils.NotFound(c, "User not found")
 		return
 	}
 
-	c.JSON(http.StatusOK, profile)
+	utils.Success(c, profile)
 }
 
 func UpdateProfile(c *gin.Context) {
@@ -46,7 +46,7 @@ func UpdateProfile(c *gin.Context) {
 
 	var req models.ProfileUpdate
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.BadRequest(c, err.Error())
 		return
 	}
 
@@ -63,7 +63,7 @@ func UpdateProfile(c *gin.Context) {
 		savePath := filepath.Join("uploads", "avatars", filename)
 		
 		if err := c.SaveUploadedFile(file, savePath); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save avatar"})
+			utils.InternalError(c, "Failed to save avatar")
 			return
 		}
 		avatarURL = "/api/uploads/avatars/" + filename
@@ -80,11 +80,11 @@ func UpdateProfile(c *gin.Context) {
 
 	_, err = db.DB.Exec(query, params...)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update profile"})
+		utils.InternalError(c, "Failed to update profile")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Profile updated", "avatar_url": avatarURL})
+	utils.Success(c, gin.H{"message": "Profile updated", "avatar_url": avatarURL})
 }
 
 func GetUserProfile(c *gin.Context) {
@@ -114,7 +114,7 @@ func GetUserProfile(c *gin.Context) {
 	)
 	if err != nil {
 		log.Printf("Error fetching user profile: %v", err)
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		utils.NotFound(c, "User not found")
 		return
 	}
 
@@ -146,5 +146,5 @@ func GetUserProfile(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, profile)
+	utils.Success(c, profile)
 }

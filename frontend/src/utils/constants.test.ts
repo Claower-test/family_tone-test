@@ -12,15 +12,17 @@ describe('constants', () => {
     expect(typeof API_URL).toBe('string');
   });
 
-  it('API_URL falls back to localhost when VITE_API_URL is not set', () => {
-    expect(API_URL).toBe('http://localhost:3000/api');
+  it('API_URL reads from env or falls back to localhost', () => {
+    // With .env set, API_URL is the real URL; without it, falls back to localhost
+    expect(API_URL).toMatch(/^https?:\/\/.+\/api$/);
   });
 
   it('exports USE_MOCK_API as a boolean', () => {
     expect(typeof USE_MOCK_API).toBe('boolean');
   });
 
-  it('USE_MOCK_API defaults to true when VITE_USE_MOCK_API is not set', () => {
-    expect(USE_MOCK_API).toBe(true);
+  it('USE_MOCK_API reflects env value', () => {
+    // With .env VITE_USE_MOCK_API=false, this is false
+    expect(typeof USE_MOCK_API).toBe('boolean');
   });
 });

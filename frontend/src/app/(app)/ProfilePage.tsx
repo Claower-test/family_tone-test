@@ -1,170 +1,315 @@
-import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router';
-import { motion } from 'framer-motion';
-import { Icon } from '@iconify/react';
-import { useAuthStore } from '@/stores/auth.store';
-import { useQuery } from '@tanstack/react-query';
-import { usersService } from '@/services/users.service';
-import { Avatar } from '@/components/ui/Avatar';
-import { ProfileEditModal } from '@/components/profile/ProfileEditModal';
-import { SecurityModal } from '@/components/profile/SecurityModal';
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Icon } from "@iconify/react";
+import { useNavigate } from "react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAuthStore } from "@/stores/auth.store";
+import { useProfile } from "@/hooks/useProfile";
+import { useRecords } from "@/hooks/useRecords";
+import { userService } from "@/services/user.service";
+import { RecordStats } from "@/components/record";
+import { API_URL } from "@/utils/constants";
 
 export function ProfilePage() {
-  const { logout: authLogout, user: authUser, token } = useAuthStore();
+  const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
+  const queryClient = useQueryClient();
+  const { data: profile, isLoading } = useProfile();
+  const { data: records } = useRecords();
 
-  const logout = () => {
-    authLogout();
-    navigate('/login');
-  };
+  const [name, setName] = useState("");
+  const [bio, setBio] = useState("");
+  const [avatar, setAvatar] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { data: userProfile, isLoading, error } = useQuery({
-    queryKey: ['current-user-profile'],
-    queryFn: async () => {
-      const profile = await usersService.getProfile();
-      console.log('Fetched Current User Profile:', profile);
-      return profile;
-    },
-    enabled: !!token,
-  });
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+
+  const baseUrl = new URL(API_URL).origin;
 
   useEffect(() => {
-    console.log('Auth Store User:', authUser);
-  }, [authUser]);
+    if (profile) {
+      setName(profile.name);
+      setBio(profile.bio ?? "");
+    }
+  }, [profile]);
 
-  const displayUser = userProfile || authUser;
-
-  if (isLoading && !userProfile) {
-    return (
-      <div className="flex flex-col items-center justify-center py-32 gap-6">
-        <div className="w-12 h-12 border-4 border-orange-100 border-t-orange-500 rounded-full animate-spin" />
-        <p className="text-sm font-bold text-neutral-400 tracking-widest uppercase">Загрузка профиля...</p>
-      </div>
-    );
+  function handleAvatarPick(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+    setAvatar(file);
+    setAvatarPreview(URL.createObjectURL(file));
   }
 
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center py-32 text-center text-red-500">
-        <Icon icon="solar:danger-bold" className="text-6xl mb-4" />
-        <h2 className="text-xl font-bold">Ошибка загрузки данных</h2>
-        <p className="mt-2 opacity-70">Пожалуйста, обновите страницу</p>
-      </div>
-    );
+  const hasChanges =
+    name !== (profile?.name ?? "") ||
+    bio !== (profile?.bio ?? "") ||
+    avatar !== null;
+
+  async function handleSave() {
+    setIsSaving(true);
+    try {
+      await userService.updateProfile({
+        name,
+        bio,
+        avatar: avatar ?? undefined,
+      });
+      setAvatar(null);
+      setAvatarPreview(null);
+      await queryClient.invalidateQueries({ queryKey: ["profile"] });
+    } finally {
+      setIsSaving(false);
+    }
   }
 
-  if (!displayUser) {
+  const totalSeconds = useMemo(
+    () => (records ?? []).reduce((sum, r) => sum + r.duration, 0),
+    [records],
+  );
+
+  async function handleChangePassword() {
+    setIsChangingPassword(true);
+    setPasswordError(null);
+    try {
+      await userService.changePassword(currentPassword, newPassword);
+      setShowPasswordForm(false);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setShowCurrentPassword(false);
+      setShowNewPassword(false);
+    } catch {
+      setPasswordError("Не удалось изменить пароль. Проверьте текущий пароль.");
+    } finally {
+      setIsChangingPassword(false);
+    }
+  }
+
+  function handleLogout() {
+    logout();
+    navigate("/login");
+  }
+
+  if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center py-32 text-center">
-        <Icon icon="solar:user-block-bold" className="text-6xl text-neutral-200 mb-6" />
-        <h2 className="text-2xl font-black text-neutral-900 mb-2">Вы не авторизованы</h2>
-        <Link to="/login" className="text-orange-500 font-bold hover:underline">Войти в аккаунт</Link>
+      <div className="flex items-center justify-center py-24">
+        <Icon
+          icon="solar:refresh-bold"
+          className="animate-spin text-2xl text-neutral-300"
+        />
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-12">
-      <ProfileEditModal 
-        user={displayUser} 
-        isOpen={isEditModalOpen} 
-        onClose={() => setIsEditModalOpen(false)} 
-      />
+    <div>
+      <div className="mb-6">
+        <h2 className="text-2xl font-black tracking-tight text-neutral-900 mb-1">
+          Профиль
+        </h2>
+        <p className="text-sm text-neutral-400">Настройки аккаунта</p>
+      </div>
 
-      <SecurityModal 
-        isOpen={isSecurityModalOpen}
-        onClose={() => setIsSecurityModalOpen(false)}
-      />
+      {/* Stats */}
+      <RecordStats count={records?.length ?? 0} totalSeconds={totalSeconds} />
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-[40px] border border-neutral-100 p-10 shadow-xl shadow-neutral-900/[0.02] relative overflow-hidden"
-      >
-        <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full -mr-16 -mt-16 blur-2xl pointer-events-none" />
-        
-        <div className="flex flex-col items-center text-center mb-10">
-          <Avatar 
-            src={displayUser.avatar_url} 
-            name={displayUser.name} 
-            size="xl" 
-            className="mb-6 ring-8 ring-orange-500/5 shadow-2xl" 
-          />
-          <h1 className="text-3xl font-black text-neutral-900 mb-2">{displayUser.name}</h1>
-          <p className="text-[10px] font-black text-neutral-400 uppercase tracking-[0.2em] mb-4">{displayUser.email}</p>
-          
-          {displayUser.bio && (
-            <p className="text-neutral-500 max-w-sm leading-relaxed mb-6">
-              {displayUser.bio}
-            </p>
-          )}
-
-          <div className="flex items-center justify-center gap-10 mb-8 border-y border-neutral-50 py-6 w-full max-w-sm">
-            <div className="flex flex-col">
-              <span className="text-2xl font-black text-neutral-900">{(userProfile as any)?.records_count ?? 0}</span>
-              <span className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">Истории</span>
-            </div>
-            <div className="w-px h-8 bg-neutral-100" />
-            <div className="flex flex-col">
-              <span className="text-2xl font-black text-neutral-900">{(userProfile as any)?.followers_count ?? 0}</span>
-              <span className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">Подписчики</span>
-            </div>
-            <div className="w-px h-8 bg-neutral-100" />
-            <div className="flex flex-col">
-              <span className="text-2xl font-black text-neutral-900">{(userProfile as any)?.following_count ?? 0}</span>
-              <span className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">Подписки</span>
-            </div>
-          </div>
-
-          <button 
-            onClick={() => setIsEditModalOpen(true)}
-            className="px-10 py-3.5 rounded-2xl bg-orange-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20 active:scale-95"
+      {/* User Info Card */}
+      <div className="rounded-[20px] border border-[#f0f0f0] bg-white p-6 mb-4">
+        <div className="flex items-center gap-4 mb-6">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="group relative flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-100 to-brand-200 overflow-hidden"
           >
-            Настроить профиль
+            {avatarPreview || profile?.avatar_url ? (
+              <img
+                src={avatarPreview ?? `${baseUrl}${profile!.avatar_url}`}
+                alt="avatar"
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <Icon
+                icon="solar:user-bold"
+                className="text-3xl text-brand-600"
+              />
+            )}
+            <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition-opacity group-hover:opacity-100">
+              <Icon icon="solar:camera-bold" className="text-lg text-white" />
+            </div>
           </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleAvatarPick}
+          />
+          <div className="flex-1">
+            <p className="text-lg font-bold text-neutral-900">
+              {profile?.email}
+            </p>
+          </div>
         </div>
 
-        <div className="space-y-3 mb-12">
-          <div 
-            onClick={() => setIsSecurityModalOpen(true)}
-            className="group p-5 rounded-3xl bg-neutral-50 border border-neutral-100 flex items-center justify-between hover:bg-white hover:border-orange-200 transition-all cursor-pointer"
+        <div className="space-y-4">
+          <div>
+            <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.15em] text-neutral-400">
+              Имя
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full rounded-[14px] border-[1.5px] border-[#f0f0f0] bg-[#fafafa] px-4 py-3.5 text-sm text-neutral-900 outline-none transition-all placeholder:text-neutral-400 focus:border-brand-300 focus:bg-white focus:ring-4 focus:ring-brand-500/[0.08]"
+              placeholder="Ваше имя"
+            />
+          </div>
+          <div>
+            <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.15em] text-neutral-400">
+              О себе
+            </label>
+            <textarea
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              rows={3}
+              className="w-full resize-none rounded-[14px] border-[1.5px] border-[#f0f0f0] bg-[#fafafa] px-4 py-3.5 text-sm text-neutral-900 outline-none transition-all placeholder:text-neutral-400 focus:border-brand-300 focus:bg-white focus:ring-4 focus:ring-brand-500/[0.08]"
+              placeholder="Расскажите о себе"
+            />
+          </div>
+          <div className="flex justify-end">
+            <button
+              onClick={handleSave}
+              disabled={isSaving || !hasChanges}
+              className="btn-primary rounded-xl px-5 py-2.5 text-xs font-semibold text-white"
+            >
+              {isSaving ? "Сохранение..." : "Сохранить"}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Account section */}
+      <div className="rounded-[20px] border border-[#f0f0f0] p-6 mb-4">
+        <h3 className="mb-3 text-sm font-bold text-neutral-900">
+          Учётная запись
+        </h3>
+        {!showPasswordForm ? (
+          <button
+            onClick={() => setShowPasswordForm(true)}
+            className="text-xs font-semibold text-brand-500 transition-colors hover:text-brand-600"
           >
-            <div className="flex items-center gap-4 text-sm font-bold text-neutral-700">
-              <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-neutral-400 group-hover:text-orange-500 transition-colors shadow-sm">
-                <Icon icon="solar:shield-keyhole-bold" />
+            Изменить пароль
+          </button>
+        ) : (
+          <div className="space-y-3">
+            <div>
+              <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.15em] text-neutral-400">
+                Текущий пароль
+              </label>
+              <div className="relative">
+                <input
+                  type={showCurrentPassword ? "text" : "password"}
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="w-full rounded-[14px] border-[1.5px] border-[#f0f0f0] bg-white py-3 pl-4 pr-12 text-sm text-neutral-900 outline-none transition-all placeholder:text-neutral-400 focus:border-brand-300 focus:ring-4 focus:ring-brand-500/[0.08]"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPassword((p) => !p)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 transition-colors hover:text-neutral-600"
+                >
+                  <Icon icon={showCurrentPassword ? "solar:eye-closed-bold" : "solar:eye-bold"} className="text-lg" />
+                </button>
               </div>
-              <span>Безопасность и пароль</span>
             </div>
-            <Icon icon="solar:alt-arrow-right-bold" className="text-neutral-300 transition-transform group-hover:translate-x-1" />
-          </div>
-
-          <div className="group p-5 rounded-3xl bg-neutral-50 border border-neutral-100 flex items-center justify-between hover:bg-white hover:border-orange-200 transition-all cursor-pointer">
-            <div className="flex items-center gap-4 text-sm font-bold text-neutral-700">
-              <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-neutral-400 group-hover:text-orange-500 transition-colors shadow-sm">
-                <Icon icon="solar:bell-bing-bold" />
+            <div>
+              <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.15em] text-neutral-400">
+                Новый пароль
+              </label>
+              <div className="relative">
+                <input
+                  type={showNewPassword ? "text" : "password"}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full rounded-[14px] border-[1.5px] border-[#f0f0f0] bg-white py-3 pl-4 pr-12 text-sm text-neutral-900 outline-none transition-all placeholder:text-neutral-400 focus:border-brand-300 focus:ring-4 focus:ring-brand-500/[0.08]"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword((p) => !p)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 transition-colors hover:text-neutral-600"
+                >
+                  <Icon icon={showNewPassword ? "solar:eye-closed-bold" : "solar:eye-bold"} className="text-lg" />
+                </button>
               </div>
-              <span>Уведомления</span>
             </div>
-            <div className="w-10 h-5 bg-orange-500 rounded-full relative shadow-inner">
-              <div className="absolute right-1 top-1 w-3 h-3 bg-white rounded-full shadow-sm" />
+            <div>
+              <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.15em] text-neutral-400">
+                Повторить пароль
+              </label>
+              <input
+                type={showNewPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full rounded-[14px] border-[1.5px] border-[#f0f0f0] bg-white px-4 py-3 text-sm text-neutral-900 outline-none transition-all placeholder:text-neutral-400 focus:border-brand-300 focus:ring-4 focus:ring-brand-500/[0.08]"
+                placeholder="••••••••"
+              />
+            </div>
+            {passwordError && (
+              <p className="text-xs text-red-500">{passwordError}</p>
+            )}
+            <div className="flex items-center justify-end gap-3 pt-1">
+              <button
+                onClick={() => {
+                  setShowPasswordForm(false);
+                  setCurrentPassword("");
+                  setNewPassword("");
+                  setConfirmPassword("");
+                  setPasswordError(null);
+                  setShowCurrentPassword(false);
+                  setShowNewPassword(false);
+                }}
+                className="rounded-xl border-[1.5px] border-[#e5e5e5] px-5 py-2.5 text-xs font-semibold text-neutral-500 transition-all hover:border-[#d4d4d4] hover:bg-[#fafafa]"
+              >
+                Отмена
+              </button>
+              <button
+                onClick={handleChangePassword}
+                disabled={
+                  isChangingPassword ||
+                  !currentPassword ||
+                  !newPassword ||
+                  newPassword !== confirmPassword
+                }
+                className="btn-primary rounded-xl px-5 py-2.5 text-xs font-semibold text-white"
+              >
+                {isChangingPassword
+                  ? "Сохранение..."
+                  : "Сохранить новый пароль"}
+              </button>
             </div>
           </div>
-        </div>
+        )}
+      </div>
 
+      {/* Logout */}
+      <div className="text-center mt-10">
         <button
-          onClick={logout}
-          className="w-full flex items-center justify-center gap-3 py-5 rounded-[24px] border-2 border-dashed border-neutral-100 text-xs font-black uppercase tracking-widest text-neutral-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 transition-all active:scale-[0.98]"
+          onClick={handleLogout}
+          className="rounded-xl border-[1.5px] border-[#e5e5e5] px-5 py-2.5 text-xs font-semibold text-red-500 transition-all hover:border-red-300 hover:bg-red-50"
         >
-          <Icon icon="solar:logout-bold" className="text-lg" />
           Выйти из аккаунта
         </button>
-      </motion.div>
-
-      <p className="mt-12 text-center text-[10px] text-neutral-300 uppercase tracking-[0.4em] font-black opacity-50">
-        FamilyTone • Established 2026
-      </p>
+      </div>
     </div>
   );
 }

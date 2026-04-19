@@ -1,8 +1,16 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand: #f97316;
-  --color-brand-hover: #ea580c;
+  --color-brand-50: #EEEEF8;
+  --color-brand-100: #D8D9ED;
+  --color-brand-200: #C4B1E6;
+  --color-brand-300: #9B9EE6;
+  --color-brand-400: #7578C2;
+  --color-brand: #5B5EA6;
+  --color-brand-500: #5B5EA6;
+  --color-brand-600: #4A4D8A;
+  --color-brand-700: #363B74;
+  --color-brand-hover: #4A4D8A;
 
   --color-bg: #ffffff;
   --color-bg-soft: #fafafa;
@@ -47,10 +55,10 @@ html {
 .gradient-text {
   background: linear-gradient(
     135deg,
-    #f97316 0%,
-    #ea580c 40%,
-    #dc2626 70%,
-    #db2777 100%
+    #5B5EA6 0%,
+    #5F4B8B 40%,
+    #C09CC6 70%,
+    #E19443 100%
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -59,12 +67,12 @@ html {
 
 /* === CTA button gradient === */
 .cta-btn {
-  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  background: linear-gradient(135deg, #5B5EA6 0%, #4A4D8A 100%);
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .cta-btn:hover {
   transform: scale(1.04);
-  box-shadow: 0 8px 30px rgba(249, 115, 22, 0.3);
+  box-shadow: 0 8px 30px rgba(91, 94, 166, 0.35);
 }
 
 /* === Phone frame === */
@@ -90,6 +98,23 @@ html {
   0%,
   100% {
     height: 6px;
+  }
+  50% {
+    height: var(--h);
+  }
+}
+
+/* === Play bar animation (record list) === */
+.play-bar {
+  width: 2px;
+  border-radius: 9999px;
+  background: var(--color-brand);
+  animation: playBar 0.8s ease-in-out infinite;
+}
+@keyframes playBar {
+  0%,
+  100% {
+    height: 3px;
   }
   50% {
     height: var(--h);
@@ -171,7 +196,7 @@ html {
 .step-bg-orange {
   background: linear-gradient(
     to bottom right,
-    rgba(255, 237, 213, 0.4),
+    rgba(91, 94, 166, 0.08),
     transparent
   );
 }
@@ -282,11 +307,11 @@ html {
   border-color: #e8e8e8;
 }
 .price-card-featured {
-  background: linear-gradient(180deg, #fff7ed 0%, #fafafa 100%);
-  border: 1.5px solid #fed7aa;
+  background: linear-gradient(180deg, #EEEEF8 0%, #fafafa 100%);
+  border: 1.5px solid #D8D9ED;
 }
 .price-card-featured:hover {
-  border-color: #fdba74;
+  border-color: #9B9EE6;
 }
 
 /* === FAQ === */
@@ -310,19 +335,19 @@ html {
   pointer-events: none;
 }
 .orb-gradient-brand {
-  background: radial-gradient(circle, rgba(249, 115, 22, 0.07), transparent 70%);
+  background: radial-gradient(circle, rgba(91, 94, 166, 0.1), transparent 70%);
 }
 .orb-gradient-brand-subtle {
-  background: radial-gradient(circle, rgba(249, 115, 22, 0.04), transparent 70%);
+  background: radial-gradient(circle, rgba(91, 94, 166, 0.06), transparent 70%);
 }
 .orb-gradient-brand-faint {
-  background: radial-gradient(circle, rgba(249, 115, 22, 0.03), transparent 70%);
+  background: radial-gradient(circle, rgba(91, 94, 166, 0.04), transparent 70%);
 }
 .orb-gradient-red-subtle {
-  background: radial-gradient(circle, rgba(239, 68, 68, 0.04), transparent 70%);
+  background: radial-gradient(circle, rgba(192, 156, 198, 0.06), transparent 70%);
 }
 .orb-gradient-brand-cta {
-  background: radial-gradient(circle, rgba(249, 115, 22, 0.05), transparent 70%);
+  background: radial-gradient(circle, rgba(95, 75, 139, 0.08), transparent 70%);
 }
 .orb-gradient-purple-subtle {
   background: radial-gradient(circle, rgba(168, 85, 247, 0.04), transparent 70%);
@@ -343,6 +368,45 @@ html {
 }
 .store-badge:hover {
   border-color: #d4d4d4;
+}
+
+/* === Primary action button (gradient) === */
+.btn-primary {
+  background: linear-gradient(to right, var(--color-brand-500), var(--color-brand-600));
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-primary:hover {
+  transform: scale(1.03);
+  box-shadow: 0 8px 30px color-mix(in srgb, var(--color-brand-500) 30%, transparent);
+}
+.btn-primary:active {
+  transform: scale(0.98);
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+}
+.btn-primary:disabled:hover {
+  transform: scale(1);
+  box-shadow: none;
+}
+
+/* === Auth card border glow === */
+.auth-card-glow {
+  position: relative;
+}
+.auth-card-glow::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 21px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-brand-500) 10%, transparent),
+    transparent,
+    color-mix(in srgb, var(--color-brand-200) 5%, transparent)
+  );
+  pointer-events: none;
+  z-index: -1;
 }
 
 /* === CTA outline button === */
@@ -366,4 +430,86 @@ html {
 /* === Dividers === */
 .divide-soft > * {
   border-color: #f0f0f0;
+}
+
+/* === Bottom tab bar === */
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-top: 1px solid #f0f0f0;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.tab-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 0;
+  transition: all 0.3s ease;
+  position: relative;
+  flex: 1;
+  color: #a3a3a3;
+}
+.tab-btn.active {
+  color: var(--color-brand-500);
+}
+
+.record-btn-float {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #5B5EA6 0%, #4A4D8A 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 32px rgba(91, 94, 166, 0.4);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  position: relative;
+  margin-top: -20px;
+}
+.record-btn-float:hover {
+  transform: scale(1.08);
+  box-shadow: 0 12px 40px rgba(91, 94, 166, 0.45);
+}
+.record-btn-float:active {
+  transform: scale(0.95);
+}
+
+/* === Recording panel === */
+.record-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.2);
+  z-index: 55;
+}
+
+.record-panel {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-top: 1px solid #f0f0f0;
+  border-radius: 28px 28px 0 0;
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.08);
+  z-index: 60;
+  padding-bottom: env(safe-area-inset-bottom, 20px);
+}
+
+@keyframes recordPulse {
+  0%,
+  100% {
+    box-shadow: 0 8px 40px rgba(91, 94, 166, 0.5);
+  }
+  50% {
+    box-shadow: 0 12px 60px rgba(91, 94, 166, 0.6);
+  }
 }

@@ -94,7 +94,7 @@ export function LoginPage() {
             to="/"
             className="mb-6 inline-flex items-center gap-2.5"
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl cta-btn shadow-lg shadow-orange-500/20">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl cta-btn shadow-lg shadow-brand-500/20">
               <Icon icon="solar:microphone-3-bold" className="text-xl text-white" />
             </div>
           </Link>
@@ -109,7 +109,7 @@ export function LoginPage() {
         </div>
 
         {/* Form card */}
-        <div className="login-card relative rounded-[20px] border border-[#f0f0f0] bg-white p-8 shadow-sm before:pointer-events-none before:absolute before:inset-[-1px] before:rounded-[21px] before:bg-[linear-gradient(135deg,rgba(249,115,22,0.1),transparent,rgba(239,68,68,0.05))] before:-z-10">
+        <div className="auth-card-glow rounded-[20px] border border-[#f0f0f0] bg-white p-8 shadow-sm">
           <form onSubmit={handleSubmit} noValidate>
             {/* Email */}
             <div className="mb-5">
@@ -126,7 +126,7 @@ export function LoginPage() {
                 className={cn(
                   'w-full rounded-[14px] border-[1.5px] bg-[#fafafa] px-4 py-3.5 text-sm text-[#1a1a1a] outline-none transition-all placeholder:text-[#b0b0b0]',
                   errors.email ? 'border-[#fca5a5]' : 'border-[#f0f0f0]',
-                  'focus:border-[#fdba74] focus:bg-white focus:shadow-[0_0_0_4px_rgba(249,115,22,0.08)]',
+                  'focus:border-brand-300 focus:bg-white focus:ring-4 focus:ring-brand-500/[0.08]',
                 )}
                 placeholder="you@example.com"
                 autoComplete="email"
@@ -153,7 +153,7 @@ export function LoginPage() {
                   className={cn(
                     'w-full rounded-[14px] border-[1.5px] bg-[#fafafa] py-3.5 pl-4 pr-12 text-sm text-[#1a1a1a] outline-none transition-all placeholder:text-[#b0b0b0]',
                     errors.password ? 'border-[#fca5a5]' : 'border-[#f0f0f0]',
-                    'focus:border-[#fdba74] focus:bg-white focus:shadow-[0_0_0_4px_rgba(249,115,22,0.08)]',
+                    'focus:border-brand-300 focus:bg-white focus:ring-4 focus:ring-brand-500/[0.08]',
                   )}
                   placeholder="Введите пароль"
                   autoComplete="current-password"
@@ -185,7 +185,7 @@ export function LoginPage() {
               type="submit"
               disabled={isLoading}
               className={cn(
-                'cta-btn flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-semibold text-white shadow-lg shadow-orange-500/15',
+                'cta-btn flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand-500/15',
                 isLoading && 'pointer-events-none opacity-70',
               )}
             >

@@ -5,30 +5,33 @@
  */
 
 import { useRef, type MouseEvent } from 'react';
-import { Link } from 'react-router';
+import { useNavigate } from 'react-router';
 import { motion } from 'framer-motion';
 import { Icon } from '@iconify/react';
+import { useAuthStore } from '@/stores/auth.store';
 
 const WAVE_BARS = [
   { color: 'bg-brand-400/50', delay: '0s', h: '28px' },
   { color: 'bg-brand-400/60', delay: '0.08s', h: '40px' },
   { color: 'bg-brand-400/70', delay: '0.16s', h: '20px' },
   { color: 'bg-brand-400/80', delay: '0.12s', h: '48px' },
-  { color: 'bg-red-400/80', delay: '0.24s', h: '36px' },
+  { color: 'bg-brand-200/80', delay: '0.24s', h: '36px' },
   { color: 'bg-brand-400/90', delay: '0.04s', h: '44px' },
-  { color: 'bg-red-400/70', delay: '0.2s', h: '24px' },
+  { color: 'bg-brand-200/70', delay: '0.2s', h: '24px' },
   { color: 'bg-brand-400/60', delay: '0.28s', h: '38px' },
   { color: 'bg-brand-400/80', delay: '0.1s', h: '32px' },
   { color: 'bg-brand-400/50', delay: '0.32s', h: '16px' },
-  { color: 'bg-red-400/60', delay: '0.18s', h: '42px' },
+  { color: 'bg-brand-200/60', delay: '0.18s', h: '42px' },
   { color: 'bg-brand-400/70', delay: '0.06s', h: '26px' },
   { color: 'bg-brand-400/80', delay: '0.22s', h: '46px' },
   { color: 'bg-brand-400/50', delay: '0.3s', h: '18px' },
-  { color: 'bg-red-400/70', delay: '0.14s', h: '34px' },
+  { color: 'bg-brand-200/70', delay: '0.14s', h: '34px' },
 ] as const;
 
 export function HeroSection() {
   const heroRef = useRef<HTMLElement>(null);
+  const token = useAuthStore((s) => s.token);
+  const navigate = useNavigate();
 
   function handleMouseMove(e: MouseEvent<HTMLElement>) {
     const el = heroRef.current;
@@ -90,13 +93,13 @@ export function HeroSection() {
           transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20"
         >
-          <Link
-            to="/register"
+          <button
+            onClick={() => navigate(token ? '/records' : '/register')}
             className="cta-btn inline-flex items-center gap-2 text-sm font-semibold text-white px-7 py-3.5 rounded-full"
           >
-            Записать бесплатно
+            {token ? 'Записать историю' : 'Записать первую историю'}
             <Icon icon="solar:arrow-right-linear" />
-          </Link>
+          </button>
           <a
             href="#how"
             className="cta-btn-outline inline-flex items-center gap-2 text-sm font-medium text-neutral-700 px-7 py-3.5 rounded-full"

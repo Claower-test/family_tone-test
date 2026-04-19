@@ -38,11 +38,26 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 });
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Handle standardized response format: { success: boolean, data: T, error?: string }
+    if (response.data && typeof response.data === 'object' && 'success' in response.data) {
+      if (response.data.success) {
+        return { ...response, data: response.data.data };
+      } else {
+        const errorMsg = response.data.error || 'Unknown error occurred';
+        return Promise.reject(new Error(errorMsg));
+      }
+    }
+    return response;
+  },
   (error: AxiosError<ApiErrorResponse>) => {
     if (error.response?.status === 401) {
       onUnauthorized?.();
       window.location.href = '/login';
+    }
+    const apiMessage = error.response?.data?.error ?? error.response?.data?.message;
+    if (apiMessage) {
+      return Promise.reject(new Error(apiMessage));
     }
     return Promise.reject(error);
   },

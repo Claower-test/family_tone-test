@@ -13,30 +13,30 @@ import (
 func Register(c *gin.Context) {
 	var req models.RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.BadRequest(c, err.Error())
 		return
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
+		utils.InternalError(c, "Failed to hash password")
 		return
 	}
 
 	result, err := db.DB.Exec("INSERT INTO users (name, email, password) VALUES (?, ?, ?)", req.Name, req.Email, string(hashedPassword))
 	if err != nil {
-		c.JSON(http.StatusConflict, gin.H{"error": "User with this email already exists"})
+		utils.Error(c, http.StatusConflict, "User with this email already exists")
 		return
 	}
 
 	id, _ := result.LastInsertId()
 	token, err := utils.GenerateToken(int(id))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+		utils.InternalError(c, "Failed to generate token")
 		return
 	}
 
-	c.JSON(http.StatusCreated, models.AuthResponse{
+	utils.Created(c, models.AuthResponse{
 		User: models.User{
 			ID:    int(id),
 			Name:  req.Name,
@@ -49,34 +49,34 @@ func Register(c *gin.Context) {
 func Login(c *gin.Context) {
 	var req models.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.BadRequest(c, err.Error())
 		return
 	}
 
 	var user models.User
 	err := db.DB.QueryRow("SELECT id, name, email, password FROM users WHERE email = ?", req.Email).Scan(&user.ID, &user.Name, &user.Email, &user.Password)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
+		utils.Unauthorized(c, "Invalid email or password")
 		return
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
+		utils.Unauthorized(c, "Invalid email or password")
 		return
 	}
 
 	token, err := utils.GenerateToken(user.ID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+		utils.InternalError(c, "Failed to generate token")
 		return
 	}
 
-	c.JSON(http.StatusOK, models.AuthResponse{
+	utils.Success(c, models.AuthResponse{
 		User:  user,
 		Token: token,
 	})
 }
 
 func Logout(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
+	utils.Success(c, gin.H{"message": "Logged out successfully"})
 }

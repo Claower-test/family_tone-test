@@ -32,7 +32,7 @@ async function mockLogin(email: string, password: string): Promise<AuthResponse>
     throw new Error('Invalid email or password');
   }
   return {
-    user: { id: mockUser.id, email, name: mockUser.name, created_at: new Date().toISOString() },
+    user: { id: mockUser.id, email, name: mockUser.name },
     token: generateMockToken(mockUser.id),
   };
 }
@@ -46,10 +46,11 @@ async function mockRegister(
   if (mockUsers.has(email)) {
     throw new Error('An account with this email already exists');
   }
+  mockIdCounter += 1;
   const id = mockIdCounter;
   mockUsers.set(email, { id, name, password });
   return {
-    user: { id, email, name, created_at: new Date().toISOString() },
+    user: { id, email, name },
     token: generateMockToken(id),
   };
 }
@@ -59,7 +60,7 @@ async function mockLogout(): Promise<void> {
 }
 
 async function realLogin(email: string, password: string): Promise<AuthResponse> {
-  const { data } = await api.post<AuthResponse>('auth/login', { email, password });
+  const { data } = await api.post<AuthResponse>('/auth/login', { email, password });
   return data;
 }
 
@@ -68,12 +69,12 @@ async function realRegister(
   email: string,
   password: string,
 ): Promise<AuthResponse> {
-  const { data } = await api.post<AuthResponse>('auth/register', { name, email, password });
+  const { data } = await api.post<AuthResponse>('/auth/register', { name, email, password });
   return data;
 }
 
 async function realLogout(): Promise<void> {
-  await api.post('auth/logout');
+  await api.post('/auth/logout');
 }
 
 export const authService = {

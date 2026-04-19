@@ -7,15 +7,27 @@ import (
 
 	"github.com/family_tone/internal/db"
 	"github.com/family_tone/internal/models"
+	"github.com/family_tone/internal/utils"
 	"github.com/gin-gonic/gin"
 )
 
 func GetRecords(c *gin.Context) {
 	userID, _ := c.Get("user_id")
 
-	rows, err := db.DB.Query("SELECT id, user_id, title, file_path, duration, is_public, created_at FROM records WHERE user_id = ?", userID)
+	rows, err := db.DB.Query(`
+		SELECT 
+			r.id, r.user_id, r.title, r.file_path, r.duration, r.is_public, r.created_at,
+			(SELECT COUNT(*) FROM record_reactions WHERE record_id = r.id AND type = 1) as hearts_count,
+			(SELECT COUNT(*) FROM record_reactions WHERE record_id = r.id AND type = -1) as broken_hearts_count,
+			(SELECT COUNT(*) FROM comments WHERE record_id = r.id) as comments_count,
+			COALESCE((SELECT type FROM record_reactions WHERE record_id = r.id AND user_id = ?), 0) as user_reaction
+		FROM records r 
+		WHERE r.user_id = ? 
+		ORDER BY r.created_at DESC`, 
+		userID, userID)
+	
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch records"})
+		utils.InternalError(c, "Failed to fetch records")
 		return
 	}
 	defer rows.Close()
@@ -23,26 +35,30 @@ func GetRecords(c *gin.Context) {
 	records := []models.Record{}
 	for rows.Next() {
 		var r models.Record
-		if err := rows.Scan(&r.ID, &r.UserID, &r.Title, &r.FilePath, &r.Duration, &r.IsPublic, &r.CreatedAt); err != nil {
+		if err := rows.Scan(
+			&r.ID, &r.UserID, &r.Title, &r.FilePath, &r.Duration, &r.IsPublic, &r.CreatedAt,
+			&r.HeartsCount, &r.BrokenHeartsCount, &r.CommentsCount, &r.UserReaction,
+		); err != nil {
+			log.Printf("Error scanning record: %v", err)
 			continue
 		}
 		records = append(records, r)
 	}
 
-	c.JSON(http.StatusOK, records)
+	utils.Success(c, records)
 }
 
 func CreateRecord(c *gin.Context) {
 	userID, _ := c.Get("user_id")
 	var req models.Record
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
 	result, err := db.DB.Exec("INSERT INTO records (user_id, title, file_path, duration) VALUES (?, ?, ?, ?)", userID, req.Title, req.FilePath, req.Duration)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create record"})
+		c.JSON(500, gin.H{"error": "Failed to create record"})
 		return
 	}
 
@@ -50,75 +66,71 @@ func CreateRecord(c *gin.Context) {
 	req.ID = int(id)
 	req.UserID = userID.(int)
 
-	c.JSON(http.StatusCreated, req)
+	c.JSON(201, req)
 }
 
 func UploadRecord(c *gin.Context) {
 	userID, _ := c.Get("user_id")
 	title := c.PostForm("title")
-	durationStr := c.PostForm("duration")
+	duration, _ := strconv.ParseFloat(c.PostForm("duration"), 64)
 	isPublicStr := c.PostForm("is_public")
-	
-	duration, _ := strconv.Atoi(durationStr)
-	isPublic := isPublicStr == "true"
+	isPublic := isPublicStr == "true" || isPublicStr == "1"
 
 	file, err := c.FormFile("audio")
 	if err != nil {
-		log.Printf("Upload error: audio file missing: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Audio file is required"})
+		utils.BadRequest(c, "Audio file is required")
 		return
 	}
 
-	// Create unique filename
-	filename := db.GenerateUniqueID() + ".webm"
-	filepath := "./uploads/" + filename
-	if err := c.SaveUploadedFile(file, filepath); err != nil {
-		log.Printf("Upload error: failed to save file: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file"})
+	// Create uploads directory if it doesn't exist
+	if _, err := os.Stat("./uploads"); os.IsNotExist(err) {
+		os.MkdirAll("./uploads", 0755)
+	}
+
+	filename := db.GenerateUniqueID() + filepath.Ext(file.Filename)
+	savePath := filepath.Join("uploads", filename)
+
+	if err := c.SaveUploadedFile(file, savePath); err != nil {
+		log.Printf("Upload error: %v", err)
+		utils.InternalError(c, "Failed to save file")
 		return
 	}
 
-	result, err := db.DB.Exec("INSERT INTO records (user_id, title, file_path, duration, is_public) VALUES (?, ?, ?, ?, ?)", userID, title, "/api/uploads/"+filename, duration, isPublic)
+	filePath := "/api/uploads/" + filename
+	_, err = db.DB.Exec("INSERT INTO records (user_id, title, file_path, duration, is_public) VALUES (?, ?, ?, ?, ?)",
+		userID, title, filePath, duration, isPublic)
+
 	if err != nil {
-		log.Printf("Upload error: failed to insert into DB: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save record metadata"})
+		log.Printf("Insert error: %v", err)
+		utils.InternalError(c, "Failed to save record info")
 		return
 	}
 
-	id, _ := result.LastInsertId()
-	log.Printf("Record created: ID=%d, Title=%s, UserID=%v", id, title, userID)
-	
-	c.JSON(http.StatusCreated, gin.H{
-		"id":        id,
-		"title":     title,
-		"file_path": "/api/uploads/" + filename,
-		"duration":  duration,
-	})
+	utils.Created(c, gin.H{"message": "Record uploaded successfully", "file_path": filePath})
 }
 
 func TogglePublic(c *gin.Context) {
 	userID, _ := c.Get("user_id")
 	recordID := c.Param("id")
 
-	var req struct {
-		IsPublic bool `json:"is_public"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "is_public boolean required"})
-		return
-	}
-
-	_, err := db.DB.Exec("UPDATE records SET is_public = ? WHERE id = ? AND user_id = ?", req.IsPublic, recordID, userID)
+	var currentStatus bool
+	err := db.DB.QueryRow("SELECT is_public FROM records WHERE id = ? AND user_id = ?", recordID, userID).Scan(&currentStatus)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update record visibility"})
+		utils.NotFound(c, "Record not found")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Visibility updated"})
+	newStatus := !currentStatus
+	_, err = db.DB.Exec("UPDATE records SET is_public = ? WHERE id = ?", newStatus, recordID)
+	if err != nil {
+		utils.InternalError(c, "Failed to update record")
+		return
+	}
+
+	utils.Success(c, gin.H{"is_public": newStatus})
 }
 
 func GetPublicRecords(c *gin.Context) {
-	// Try to get current userID if authenticated, but don't fail if not
 	currentUserID, _ := c.Get("user_id")
 
 	query := `

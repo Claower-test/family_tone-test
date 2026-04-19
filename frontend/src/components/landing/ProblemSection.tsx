@@ -10,7 +10,7 @@ import { Icon } from '@iconify/react';
 const PAIN_POINTS = [
   {
     icon: 'solar:gallery-bold',
-    iconBg: 'bg-orange-50',
+    iconBg: 'bg-brand-50',
     iconColor: 'text-brand',
     title: 'Тысячи фотографий',
     description:

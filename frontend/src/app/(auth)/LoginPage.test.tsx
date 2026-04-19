@@ -4,10 +4,16 @@
  * @module app/(auth)/LoginPage.test
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router';
+
+vi.mock('@/utils/constants', () => ({
+  API_URL: 'http://localhost:3000/api',
+  USE_MOCK_API: true,
+}));
+
 import { LoginPage } from '@/app/(auth)/LoginPage';
 import { useAuthStore } from '@/stores/auth.store';
 

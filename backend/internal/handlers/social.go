@@ -21,7 +21,7 @@ func ToggleReaction(c *gin.Context) {
 		Type int `json:"type" binding:"required"` // 1 for heart, -1 for broken heart
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Reaction type is required"})
+		utils.BadRequest(c, "Reaction type is required")
 		return
 	}
 
@@ -51,11 +51,11 @@ func ToggleReaction(c *gin.Context) {
 
 	if err != nil {
 		log.Printf("Reaction error: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to toggle reaction"})
+		utils.InternalError(c, "Failed to toggle reaction")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Reaction updated"})
+	utils.Success(c, gin.H{"message": "Reaction updated"})
 }
 
 func AddComment(c *gin.Context) {
@@ -67,17 +67,17 @@ func AddComment(c *gin.Context) {
 		ParentID *int   `json:"parent_id"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Content is required"})
+		utils.BadRequest(c, "Content is required")
 		return
 	}
 
 	_, err := db.DB.Exec("INSERT INTO comments (user_id, record_id, parent_id, content) VALUES (?, ?, ?, ?)", userID, recordID, req.ParentID, req.Content)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add comment"})
+		utils.InternalError(c, "Failed to add comment")
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "Comment added"})
+	utils.Created(c, gin.H{"message": "Comment added"})
 }
 
 func UpdateComment(c *gin.Context) {
@@ -88,7 +88,7 @@ func UpdateComment(c *gin.Context) {
 		Content string `json:"content" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Content is required"})
+		utils.BadRequest(c, "Content is required")
 		return
 	}
 
@@ -96,22 +96,22 @@ func UpdateComment(c *gin.Context) {
 	var ownerID int
 	err := db.DB.QueryRow("SELECT user_id FROM comments WHERE id = ?", commentID).Scan(&ownerID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Comment not found"})
+		utils.NotFound(c, "Comment not found")
 		return
 	}
 
 	if ownerID != userID.(int) {
-		c.JSON(http.StatusForbidden, gin.H{"error": "You can only edit your own comments"})
+		utils.Forbidden(c, "You can only edit your own comments")
 		return
 	}
 
 	_, err = db.DB.Exec("UPDATE comments SET content = ? WHERE id = ?", req.Content, commentID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update comment"})
+		utils.InternalError(c, "Failed to update comment")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Comment updated"})
+	utils.Success(c, gin.H{"message": "Comment updated"})
 }
 
 func DeleteComment(c *gin.Context) {
@@ -122,12 +122,12 @@ func DeleteComment(c *gin.Context) {
 	var ownerID int
 	err := db.DB.QueryRow("SELECT user_id FROM comments WHERE id = ?", commentID).Scan(&ownerID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Comment not found"})
+		utils.NotFound(c, "Comment not found")
 		return
 	}
 
 	if ownerID != userID.(int) {
-		c.JSON(http.StatusForbidden, gin.H{"error": "You can only delete your own comments"})
+		utils.Forbidden(c, "You can only delete your own comments")
 		return
 	}
 
@@ -144,11 +144,11 @@ func DeleteComment(c *gin.Context) {
 	}
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete comment"})
+		utils.InternalError(c, "Failed to delete comment")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Comment deleted"})
+	utils.Success(c, gin.H{"message": "Comment deleted"})
 }
 
 func GetComments(c *gin.Context) {
@@ -168,7 +168,7 @@ func GetComments(c *gin.Context) {
 	currentUserID, recordID)
 	
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch comments"})
+		utils.InternalError(c, "Failed to fetch comments")
 		return
 	}
 	defer rows.Close()
@@ -219,7 +219,7 @@ func GetComments(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, tree)
+	utils.Success(c, tree)
 }
 
 func ToggleFollow(c *gin.Context) {
@@ -228,14 +228,14 @@ func ToggleFollow(c *gin.Context) {
 	followingID, _ := strconv.Atoi(followingIDStr)
 
 	if followerID == followingID {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "You cannot follow yourself"})
+		utils.BadRequest(c, "You cannot follow yourself")
 		return
 	}
 
 	var exists bool
 	err := db.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM follows WHERE follower_id = ? AND following_id = ?)", followerID, followingID).Scan(&exists)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		utils.InternalError(c, "Database error")
 		return
 	}
 
@@ -246,9 +246,9 @@ func ToggleFollow(c *gin.Context) {
 	}
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to toggle follow"})
+		utils.InternalError(c, "Failed to toggle follow")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"following": !exists})
+	utils.Success(c, gin.H{"following": !exists})
 }

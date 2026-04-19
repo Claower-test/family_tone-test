@@ -14,7 +14,7 @@ func ChangePassword(c *gin.Context) {
 
 	var req models.ChangePasswordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.BadRequest(c, err.Error())
 		return
 	}
 
@@ -22,29 +22,29 @@ func ChangePassword(c *gin.Context) {
 	var currentHashed string
 	err := db.DB.QueryRow("SELECT password FROM users WHERE id = ?", userID).Scan(&currentHashed)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		utils.NotFound(c, "User not found")
 		return
 	}
 
 	// 2. Verify current password
 	if err := bcrypt.CompareHashAndPassword([]byte(currentHashed), []byte(req.CurrentPassword)); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid current password"})
+		utils.Unauthorized(c, "Invalid current password")
 		return
 	}
 
 	// 3. Hash new password
 	newHashed, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash new password"})
+		utils.InternalError(c, "Failed to hash new password")
 		return
 	}
 
 	// 4. Update DB
 	_, err = db.DB.Exec("UPDATE users SET password = ? WHERE id = ?", string(newHashed), userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update password"})
+		utils.InternalError(c, "Failed to update password")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Password updated successfully"})
+	utils.Success(c, gin.H{"message": "Password updated successfully"})
 }

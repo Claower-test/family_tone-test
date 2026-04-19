@@ -60,7 +60,7 @@ describe('api', () => {
     } as unknown as AxiosError<ApiErrorResponse>;
 
     const rejectionHandler = getResponseRejectionInterceptor();
-    await expect(rejectionHandler(error)).rejects.toBe(error);
+    await expect(rejectionHandler(error)).rejects.toThrow('Unauthorized');
     expect(mockUnauthorizedHandler).toHaveBeenCalledOnce();
   });
 
@@ -70,7 +70,7 @@ describe('api', () => {
     } as unknown as AxiosError<ApiErrorResponse>;
 
     const rejectionHandler = getResponseRejectionInterceptor();
-    await expect(rejectionHandler(error)).rejects.toBe(error);
+    await expect(rejectionHandler(error)).rejects.toThrow('Server Error');
     expect(mockUnauthorizedHandler).not.toHaveBeenCalled();
   });
 });

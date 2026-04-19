@@ -10,9 +10,7 @@ import { LoginPage } from '@/app/(auth)/LoginPage';
 import { RegisterPage } from '@/app/(auth)/RegisterPage';
 import { AppLayout } from '@/app/(app)/AppLayout';
 import { RecordsPage } from '@/app/(app)/RecordsPage';
-import { PublicPage } from '@/app/(app)/PublicPage';
 import { ProfilePage } from '@/app/(app)/ProfilePage';
-import UserProfileView from '@/app/(app)/UserProfileView';
 import { useAuthStore } from '@/stores/auth.store';
 
 export function requireAuth() {
@@ -51,23 +49,9 @@ export const router = createBrowserRouter([
         loader: requireAuth,
       },
       {
-        path: '/public',
-        element: <PublicPage />,
-        loader: requireAuth,
-      },
-      {
         path: '/profile',
         element: <ProfilePage />,
         loader: requireAuth,
-      },
-      {
-        path: '/profile/:id',
-        element: <UserProfileView />,
-        loader: requireAuth,
-      },
-      {
-        path: '*',
-        element: <div className="p-8 text-center mt-20"><h1 className="text-2xl font-black">404</h1><p>Страница не найдена внутри расширения.</p></div>,
       },
     ],
   },

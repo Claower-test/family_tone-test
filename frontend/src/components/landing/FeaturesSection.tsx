@@ -10,7 +10,7 @@ import { Icon } from '@iconify/react';
 const FEATURES = [
   {
     icon: 'solar:microphone-3-bold',
-    iconBg: 'bg-orange-50',
+    iconBg: 'bg-brand-50',
     iconColor: 'text-brand-500',
     title: 'Запись в один тап',
     description: 'Нажали — и говорите. Без настроек, без обучения.',
